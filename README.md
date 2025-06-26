@@ -53,17 +53,6 @@ feature/improve-ui
 bugfix/fix-login-error
 ```
 
-### 브랜치 네이밍 규칙
-
-| Prefix | 용도 |
-|:---|:---|
-| chores/ | 폴더 정리 |
-| workspace/ | 개인 작업 |
-| curriculum/ | 학습 자료 업데이트 |
-| docs/ | 문서 정리 |
-| projects/ | 프로젝트 작업 |
-| codetests/ | 코딩 테스트 |
-
 ⸻
 
 ## 📌 4. 변경 사항 저장 (커밋하기)
