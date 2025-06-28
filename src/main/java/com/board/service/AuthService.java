@@ -6,6 +6,7 @@ import com.board.auth.jwt.JwtTokenProvider;
 import com.board.domain.Member;
 import com.board.domain.Platform;
 import com.board.domain.Token;
+import com.board.dto.LogoutResponse;
 import com.board.dto.UserLogin;
 import com.board.dto.UserLoginResponse;
 import com.board.dto.UserRegister;
@@ -20,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /*
  * AuthService
@@ -38,6 +40,7 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
 
   // 로컬 로그인
+  @Transactional
   public UserLoginResponse localLogin(UserLogin userLogin) {
     log.info("[AuthService] localLogin");
     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
@@ -59,12 +62,14 @@ public class AuthService {
 
     tokenRepository.save(token);
     return UserLoginResponse.builder()
+        .message("로그인 완료")
         .email(token.getMember().getEmail())
         .accessToken(jwtToken.getAccessToken())
         .build();
   }
 
   // 로컬 회원가입
+  @Transactional
   public String register(UserRegister userRegister){
     log.info("[AuthService] register");
 
@@ -82,5 +87,14 @@ public class AuthService {
       memberRepository.save(member);
       return member.getEmail();
     }
+  }
+
+  @Transactional
+  public LogoutResponse removeRefreshToken(String email){
+    log.info("[AuthService] removeRefreshToken email: {}", email);
+    Long userId = memberRepository.findByEmail(email).get().getId();
+    log.info("[AuthService] removeRefreshToken userId: {}", userId);
+    tokenRepository.deleteByMemberId(userId);
+    return LogoutResponse.builder().message("로그아웃 완료").build();
   }
 }
