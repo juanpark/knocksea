@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Getter
@@ -34,7 +35,8 @@ public class Token {
   @Column(nullable = false, length = 512)
   private String refreshToken;
 
+  @CreationTimestamp
   private LocalDateTime issuedAt;
-  private LocalDateTime expiredAt;
 
+  private LocalDateTime expiredAt;
 }

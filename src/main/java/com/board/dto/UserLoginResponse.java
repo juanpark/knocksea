@@ -7,5 +7,5 @@ import lombok.Getter;
 @Builder
 public class UserLoginResponse {
   private String email;
-  private String refreshToken;
+  private String accessToken;
 }

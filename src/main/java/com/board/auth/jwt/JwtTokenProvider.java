@@ -12,6 +12,7 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -143,6 +144,16 @@ public class JwtTokenProvider {
     return false;
   }
 
+  // token 만료시간 추출
+  public Date getExpiration(String token) {
+    return Jwts.parserBuilder()
+        .setSigningKey(secretKey)
+        .build()
+        .parseClaimsJws(token)
+        .getBody()
+        .getExpiration();
+  }
+
   /*
   JWT Payload 정보 파싱해 반환함
   만료된 경우에도 payload 정보 꺼내기 위해 try~catch문 사용
@@ -166,6 +177,4 @@ public class JwtTokenProvider {
     headers.put("alg", "HS512");
     return headers;
   }
-
-
 }
