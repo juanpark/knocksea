@@ -18,13 +18,13 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long postsId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) //연관 엔티티 받을 때만 DB조회
     @JoinColumn(name = "user_id")
     private User user;
 
     private String title;
 
-    @Lob
+    @Lob //Large Object(긴 텍스트 저장)
     private String content;
 
     private int likeCount;
@@ -32,13 +32,15 @@ public class Post {
     private int dislikeCount;
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.WAITING;
+    private Status status = Status.WAITING; //기본 값
 
     private LocalDateTime createAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    //Comment 엔티티의 post 필드가 주인 (외래 키를 가진 쪽이 주인)
+    //게시글 저장,삭제 시 댓글도 저장,삭제 / 댓글 제거하면 DB에서도 삭제
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
     @ManyToMany
@@ -57,9 +59,24 @@ public class Post {
     )
     private List<Tag> tags = new ArrayList<>();
 
+    //게시글 상태
     public enum Status {
         WAITING,
         COMPLETED,
         ADOPTED
+    }
+
+    //편의 메서드
+    public void setUser(User user) {
+        this.user = user;
+        if (!user.getPosts().contains(this)) {
+            user.getPosts().add(this);
+        }
+    }
+
+    //편의 메서드
+    public void addComment(Comment comment) {
+        comments.add(comment);
+        comment.setPost(this);
     }
 }
