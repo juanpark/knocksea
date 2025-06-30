@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>API 테스트</title>
+</head>
+<body>
+<h1>Spring Security 테스트입니다</h1>
+<h3>Security 설정된 경로(POST 요청만)</h3>
+<div id="result"></div>
+<script>
+  const accessToken = localStorage.getItem("accessToken");
+
+  async function testApi(){
+    try{
+      const response = await fetch('/test',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':`Bearer ${accessToken}`
+        }
+      });
+
+      const data = await response.json();
+      console.log(data);
+      document.getElementById("result").innerHTML = `<p><strong>${data.email}</strong></p>`;
+
+    }catch(error){
+      document.getElementById("result").innerHTML = `<p style="color:red;">에러: ${error.message}</p>`;
+    }
+  }
+  testApi();
+</script>
+</body>
+</html>
