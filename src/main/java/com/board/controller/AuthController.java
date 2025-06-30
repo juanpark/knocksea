@@ -29,7 +29,7 @@ public class AuthController {
   public ResponseEntity<String> localRegister(@RequestBody UserRegister userRegister){
     try{
       String email = authService.register(userRegister);
-      return new ResponseEntity<>(email, HttpStatus.OK);
+      return new ResponseEntity<>(email, HttpStatus.CREATED);
     }catch(IllegalArgumentException e){
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }

@@ -42,18 +42,18 @@ public class AuthService {
   // 로컬 로그인
   @Transactional
   public UserLoginResponse localLogin(UserLogin userLogin) {
-    log.info("[AuthService] localLogin");
     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
         userLogin.getEmail(), userLogin.getPassword());
+
     Authentication authentication = authenticationManager.authenticate(
         usernamePasswordAuthenticationToken);
     JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
+
     LocalDateTime expiredAt = jwtTokenProvider.getExpiration(jwtToken.getRefreshToken())
         .toInstant()
         .atZone(ZoneId.systemDefault())
         .toLocalDateTime();
-    log.info("[AuthService] localLogin authentication: {}",((CustomUserDetails) authentication.getPrincipal()).getMember());
-    log.info("[AuthService] localLogin jwtToken: {}",jwtToken.getRefreshToken());
+
     Token token = Token.builder()
         .member(((CustomUserDetails) authentication.getPrincipal()).getMember())
         .refreshToken(jwtToken.getRefreshToken())
@@ -61,10 +61,11 @@ public class AuthService {
         .build();
 
     tokenRepository.save(token);
+
     return UserLoginResponse.builder()
         .message("로그인 완료")
-        .email(token.getMember().getEmail())
         .accessToken(jwtToken.getAccessToken())
+        .refreshToken(jwtToken.getRefreshToken())
         .build();
   }
 
