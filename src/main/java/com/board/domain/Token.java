@@ -3,6 +3,7 @@ package com.board.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,14 +30,16 @@ public class Token {
   private Long id;
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false)
+  @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name="fk_token_user"))
   private Member member;
 
-  @Column(nullable = false, length = 512)
+  @Column(nullable = false, length = 512, unique = true)
   private String refreshToken;
 
   @CreationTimestamp
+  @Column(nullable = false)
   private LocalDateTime issuedAt;
 
+  @Column(nullable = false)
   private LocalDateTime expiredAt;
 }
