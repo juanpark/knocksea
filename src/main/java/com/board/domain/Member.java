@@ -39,7 +39,7 @@ public class Member {
   private String nickname;
 
   // 회원 패스워드
-  @Column(length = 50)
+  @Column(length = 255)
   private String password;
 
   //KAKAO 로그인 시 사용자 고유 ID

@@ -6,9 +6,10 @@ import com.board.auth.jwt.JwtTokenProvider;
 import com.board.domain.Member;
 import com.board.domain.Platform;
 import com.board.domain.Token;
+import com.board.dto.JwtTokenRequest;
+import com.board.dto.JwtTokenResponse;
 import com.board.dto.LogoutResponse;
 import com.board.dto.UserLogin;
-import com.board.dto.UserLoginResponse;
 import com.board.dto.UserRegister;
 import com.board.repository.MemberRepository;
 import com.board.repository.TokenRepository;
@@ -41,7 +42,7 @@ public class AuthService {
 
   // 로컬 로그인
   @Transactional
-  public UserLoginResponse localLogin(UserLogin userLogin) {
+  public JwtTokenResponse localLogin(UserLogin userLogin) {
     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
         userLogin.getEmail(), userLogin.getPassword());
 
@@ -62,7 +63,7 @@ public class AuthService {
 
     tokenRepository.save(token);
 
-    return UserLoginResponse.builder()
+    return JwtTokenResponse.builder()
         .message("로그인 완료")
         .accessToken(jwtToken.getAccessToken())
         .refreshToken(jwtToken.getRefreshToken())
@@ -97,5 +98,39 @@ public class AuthService {
     log.info("[AuthService] removeRefreshToken userId: {}", userId);
     tokenRepository.deleteByMemberId(userId);
     return LogoutResponse.builder().message("로그아웃 완료").build();
+  }
+
+  // AccessToken 재발급 (RefreshToken은 만료시 자동 로그아웃하여 다시 재로그인하도록 함)
+  public JwtTokenResponse reissueAccessToken(JwtTokenRequest jwtTokenRequest){
+    String refreshToken = jwtTokenRequest.getRefreshToken();
+
+    // Token 유효성 검증
+    if(!jwtTokenProvider.validateToken(refreshToken)){
+      throw new RuntimeException("유효하지 않은 RefreshToken입니다.");
+    }
+
+    String email = jwtTokenProvider.extractEmail(refreshToken);
+    log.info("[AuthService] reissueAccessToken email: {}", email);
+
+    // 저장된 RefreshToken과 일치하는 지 확인
+    Member member = memberRepository.findByEmail(email)
+        .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+
+    Token savedToken = tokenRepository.findByMemberId(member.getId())
+        .orElseThrow(() -> new RuntimeException("저장된 토큰이 없습니다."));
+
+    if (!savedToken.getRefreshToken().equals(refreshToken)) {
+      throw new RuntimeException("위조된 RefreshToken입니다.");
+    }
+
+    // 새 AccessToken 발급
+    Authentication authentication = jwtTokenProvider.getAuthentication(refreshToken);
+    String newAccessToken = jwtTokenProvider.generateAccessToken(authentication);
+
+    return JwtTokenResponse.builder()
+        .message("AccessToken 재발급 완료")
+        .accessToken(newAccessToken)
+        .refreshToken(refreshToken)
+        .build();
   }
 }

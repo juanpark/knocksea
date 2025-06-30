@@ -12,7 +12,6 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -65,7 +64,7 @@ public class JwtTokenProvider {
   }
 
   // AccessToken 생성
-  private String generateAccessToken(Authentication authentication) {
+  public String generateAccessToken(Authentication authentication) {
     String authorities = authentication.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
         .collect(Collectors.joining(","));
@@ -85,6 +84,10 @@ public class JwtTokenProvider {
 
   // RefreshToken 생성
   private String generateRefreshToken(Authentication authentication) {
+    String authorities = authentication.getAuthorities().stream()
+        .map(GrantedAuthority::getAuthority)
+        .collect(Collectors.joining(","));
+
     long now = System.currentTimeMillis();
     Date refreshTokenExpired = new Date(now + refreshTokenValidityTime ); // 유효기간 15일
 
@@ -92,6 +95,7 @@ public class JwtTokenProvider {
         .setHeader(createHeaders())
         .setSubject(authentication.getName())
         .claim("iss","off")
+        .claim("auth",authorities) //권한 설정
         .setExpiration(refreshTokenExpired)
         .setIssuedAt(new Date(now))
         .signWith(secretKey, SignatureAlgorithm.HS512)
@@ -152,6 +156,15 @@ public class JwtTokenProvider {
         .parseClaimsJws(token)
         .getBody()
         .getExpiration();
+  }
+
+  public String extractEmail(String token){
+    return Jwts.parserBuilder()
+        .setSigningKey(secretKey)
+        .build()
+        .parseClaimsJws(token)
+        .getBody()
+        .getSubject();
   }
 
   /*

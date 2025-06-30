@@ -1,9 +1,10 @@
 package com.board.controller;
 
 import com.board.auth.CustomUserDetails;
+import com.board.dto.JwtTokenRequest;
+import com.board.dto.JwtTokenResponse;
 import com.board.dto.LogoutResponse;
 import com.board.dto.UserLogin;
-import com.board.dto.UserLoginResponse;
 import com.board.dto.UserRegister;
 import com.board.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,8 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/login")
-  public ResponseEntity<UserLoginResponse> localLogin(@RequestBody UserLogin userLogin){
-    UserLoginResponse response = authService.localLogin(userLogin);
+  public ResponseEntity<JwtTokenResponse> localLogin(@RequestBody UserLogin userLogin){
+    JwtTokenResponse response = authService.localLogin(userLogin);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -44,6 +45,12 @@ public class AuthController {
 
     String email = userDetails.getUsername();
     LogoutResponse response = authService.removeRefreshToken(email);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @PostMapping("/reissue")
+  public ResponseEntity<JwtTokenResponse> reissueAccessToken(@RequestBody JwtTokenRequest jwtTokenRequest){
+    JwtTokenResponse response = authService.reissueAccessToken(jwtTokenRequest);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }
