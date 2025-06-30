@@ -17,7 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtTokenProvider jwtTokenProvider;
-  private final List<String> excludedPaths = List.of("/login","/signup","/register");
+  private final List<String> excludedPaths = List.of("/login","/signup","/register","/.well-known/appspecific/com.chrome.devtools.json");
 
   //필터 제외할 경로 설정
   @Override

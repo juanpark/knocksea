@@ -1,5 +1,4 @@
 <!doctype html>
-<html lang="ko">
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
@@ -10,5 +9,10 @@
 </head>
 <body>
   <h1>홈입니다</h1>
+
 </body>
+<script>
+  const accessToken = localStorage.getItem("accessToken");
+  document.write(`<p>AccessToken: ${accessToken}</p>`);
+</script>
 </html>

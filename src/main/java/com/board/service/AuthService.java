@@ -19,6 +19,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
@@ -66,11 +71,11 @@ public class AuthService {
 
   // 로컬 로그인
   @Transactional
-  public JwtTokenResponse localLogin(UserLogin userLogin) {
+  public JwtTokenResponse localLogin(UserLogin userLogin)  {
     Authentication authentication = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(userLogin.getEmail(), userLogin.getPassword()));
 
-    return createTokenAndSave(authentication, "로그인 완료");
+    return createTokenAndSave(authentication,"로그인 완료");
   }
 
   // 로컬 회원가입
@@ -162,12 +167,11 @@ public class AuthService {
         userDetails, null, userDetails.getAuthorities());
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
-
-    return createTokenAndSave(authentication, "로그인 완료");
+    return createTokenAndSave(authentication,"카카오 로그인 완료");
   }
 
   // Token 생성 및 저장
-  private JwtTokenResponse createTokenAndSave(Authentication authentication, String message) {
+  private JwtTokenResponse createTokenAndSave(Authentication authentication,String message) {
     JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
 
     LocalDateTime expiredAt = jwtTokenProvider.getExpiration(jwtToken.getRefreshToken())
@@ -182,11 +186,10 @@ public class AuthService {
         .build();
 
     tokenRepository.save(token);
-
     return JwtTokenResponse.builder()
-        .message(message)
         .accessToken(jwtToken.getAccessToken())
         .refreshToken(jwtToken.getRefreshToken())
+        .message(message)
         .build();
   }
 
