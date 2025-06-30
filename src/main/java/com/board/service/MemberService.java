@@ -1,5 +1,6 @@
 package com.board.service;
 
+import com.board.domain.Member;
 import com.board.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,5 +13,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MemberService {
   private final MemberRepository memberRepository;
+
+  // 이름 및 닉네임 변경
+  public Member updateMemberName(Member member){
+    return memberRepository.save(member);
+  }
 
 }

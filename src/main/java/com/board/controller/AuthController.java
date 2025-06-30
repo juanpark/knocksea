@@ -7,12 +7,17 @@ import com.board.dto.LogoutResponse;
 import com.board.dto.UserLogin;
 import com.board.dto.UserRegister;
 import com.board.service.AuthService;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -52,5 +57,16 @@ public class AuthController {
   public ResponseEntity<JwtTokenResponse> reissueAccessToken(@RequestBody JwtTokenRequest jwtTokenRequest){
     JwtTokenResponse response = authService.reissueAccessToken(jwtTokenRequest);
     return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  /*카카오 OAuth2 로그인*/
+  /*클라이언트에서 인가코드를 전달받은 뒤 AccessToken, RefreshToken 발급, 사용자 저장 */
+  @GetMapping("oauth/kakao/login")
+  public ResponseEntity<JwtTokenResponse>  kakaoOauthLogin(@RequestParam("code") String code){
+    JwtTokenResponse response = authService.kakaoOauthLogin(code);
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("Authorization", "Bearer " + response.getAccessToken());
+
+    return ResponseEntity.ok().headers(headers).body(response);
   }
 }

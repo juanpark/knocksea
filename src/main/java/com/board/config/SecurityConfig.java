@@ -33,7 +33,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorizeRequests -> authorizeRequests
 //                .requestMatchers("/login","/register","/css/**").permitAll()
 //                .anyRequest().authenticated()
-                    .requestMatchers("/logout","/").authenticated()
+                    .requestMatchers("/logout").authenticated()
                     .anyRequest().permitAll()
             )
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
