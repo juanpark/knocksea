@@ -74,7 +74,11 @@
 </div>
 
 <div class="container">
+
   <h1 th:text="${post.title}">게시글 제목</h1>
+
+  <p>조회수: <span th:text="${post.viewCount}"></span></p>
+
   <p th:text="${post.content}">게시글 내용</p>
 
   <div class="button-group">

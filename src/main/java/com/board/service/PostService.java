@@ -1,9 +1,6 @@
 package com.board.service;
 
-import com.board.domain.Category;
 import com.board.domain.Post;
-import com.board.domain.Tag;
-import com.board.domain.User;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
 import com.board.repository.PostRepository;
@@ -42,8 +39,11 @@ public class PostService {
     }
 
     //게시글 조회
-    @Transactional(readOnly = true)
+    @Transactional
     public PostResponseDto getPost(Long id) {
+        //조회수 증가
+        postRepository.increaseViewCount(id);
+
         //글이 삭제된 상태에서 조회 요청 보낼 수 있고, URL에서 직접 요청하는 경우도 있으므로 예외처리
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
@@ -111,6 +111,7 @@ public class PostService {
         dto.setStatus(post.getStatus().name());
         dto.setCreateAt(post.getCreateAt());
         dto.setUpdatedAt(post.getUpdatedAt());
+        dto.setViewCount(post.getViewCount());
 
         return dto;
     }

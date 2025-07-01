@@ -45,6 +45,11 @@
         .post-title:hover {
             text-decoration: underline;
         }
+        .post-info {
+            font-size: 14px;
+            color: #777;
+            margin-top: 8px;
+        }
         .create-button {
             display: inline-block;
             margin-bottom: 30px;
@@ -59,7 +64,6 @@
         .create-button:hover {
             background-color: #1976D2;
         }
-        /* 페이징 스타일 */
         .pagination {
             margin-top: 20px;
             text-align: center;
@@ -102,6 +106,9 @@
 
     <div th:each="post : ${posts}" class="post-card">
         <a th:href="@{/posts/{id}(id=${post.postsId})}" th:text="${post.title}" class="post-title">게시글 제목</a>
+        <div class="post-info">
+            조회수: <span th:text="${post.viewCount}"></span>
+        </div>
     </div>
 
     <div class="pagination">
@@ -115,5 +122,6 @@
         <a th:if="${currentPage + 1 < totalPages}" th:href="@{'/posts?page=' + ${currentPage + 1}}">다음</a>
     </div>
 </div>
+
 </body>
 </html>

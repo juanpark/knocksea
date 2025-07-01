@@ -23,8 +23,8 @@ public class Comment {
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -57,10 +57,10 @@ public class Comment {
     }
 
     //편의 메서드
-    public void setUser(User user) {
-        this.user = user;
-        if (!user.getComments().contains(this)) {
-            user.getComments().add(this);
+    public void setMember(Member member) {
+        this.member = member;
+        if (!member.getComments().contains(this)) {
+            member.getComments().add(this);
         }
     }
 

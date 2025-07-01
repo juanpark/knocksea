@@ -19,8 +19,8 @@ public class Post {
     private Long postsId;
 
     @ManyToOne(fetch = FetchType.LAZY) //연관 엔티티 받을 때만 DB조회
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     private String title;
 
@@ -37,6 +37,8 @@ public class Post {
     private LocalDateTime createAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    private int viewCount;
 
     //Comment 엔티티의 post 필드가 주인 (외래 키를 가진 쪽이 주인)
     //게시글 저장,삭제 시 댓글도 저장,삭제 / 댓글 제거하면 DB에서도 삭제
@@ -67,10 +69,10 @@ public class Post {
     }
 
     //편의 메서드
-    public void setUser(User user) {
-        this.user = user;
-        if (!user.getPosts().contains(this)) {
-            user.getPosts().add(this);
+    public void setMember(Member member) {
+        this.member = member;
+        if (!member.getPosts().contains(this)) {
+            member.getPosts().add(this);
         }
     }
 

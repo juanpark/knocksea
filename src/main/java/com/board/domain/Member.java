@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "users")
-public class User {
+public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,23 +31,23 @@ public class User {
 
     //Post 엔티티의 user 필드가 주인 (외래 키를 가진 쪽이 주인)
     //게시글 저장,삭제 시 댓글도 저장,삭제 / 댓글 제거하면 DB에서도 삭제
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
     //Comment 엔티티의 user 필드가 주인 (외래 키를 가진 쪽이 주인)
     //게시글 저장,삭제 시 댓글도 저장,삭제 / 댓글 제거하면 DB에서도 삭제
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
     //편의 메서드
     public void addPost(Post post) {
         posts.add(post);
-        post.setUser(this);
+        post.setMember(this);
     }
 
     //편의 메서드
     public void addComment(Comment comment) {
         comments.add(comment);
-        comment.setUser(this);
+        comment.setMember(this);
     }
 }
