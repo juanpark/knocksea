@@ -2,11 +2,13 @@ package com.board.auth.contorller;
 
 import com.board.auth.service.AuthService;
 import com.board.auth.CustomUserDetails;
+import com.board.dto.EmailVerificationRequest;
 import com.board.dto.JwtTokenRequest;
 import com.board.dto.JwtTokenResponse;
 import com.board.dto.LogoutResponse;
 import com.board.dto.UserLogin;
 import com.board.dto.UserRegister;
+import com.board.service.MailService;
 import com.board.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +31,29 @@ public class AuthController {
 
   private final AuthService authService;
   private final MemberService memberService;
+  private final MailService mailService;
 
   // 닉네임 중복 확인
   @GetMapping("/check-nickname")
   @ResponseBody
   public ResponseEntity<Boolean> checkNickname(@RequestParam String nickname){
     return new ResponseEntity<>(!memberService.checkNickname(nickname), HttpStatus.OK);
+  }
+
+  // 이메일 인증 코드 요청 (중복이메일 검증 후 인증코드 전송)
+  @PostMapping("/email-verification")
+  @ResponseBody
+  public ResponseEntity<String> sendVerification(@RequestBody EmailVerificationRequest emailVerificationRequest){
+    try{
+      if(memberService.findByEmail(emailVerificationRequest.getEmail()) != null){
+        return new ResponseEntity<>("이미 존재하는 이메일입니다.", HttpStatus.BAD_REQUEST);
+      }else{
+        mailService.sendVerificationCode(emailVerificationRequest.getEmail());
+        return new ResponseEntity<>("이메일을 전송했습니다. 확인해주세요.", HttpStatus.OK);
+      }
+    }catch(Exception e){
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
   }
 
   // 자체 로그인

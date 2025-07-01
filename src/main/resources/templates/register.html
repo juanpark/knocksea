@@ -82,6 +82,74 @@
       alert("확인 중 오류가 발생했습니다.");
     }
   })
+
+  // 이메일 인증 요청
+  emailVerifyBtn.addEventListener("click",async()=>{
+
+    const email = document.getElementById("email").value;
+
+    const response = await fetch("/email-verification",{
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email })
+    })
+
+    if(response.ok) {
+      const result = await response.json();
+      alert(result);
+
+      //   // 인증 코드 입력 박스 생성
+      //   verificationBox = document.createElement("div");
+      //   verificationBox.id = "verification-box";
+      //   verificationBox.innerHTML = `
+      //     <label for="verification-code">인증 코드:</label>
+      //     <input type="text" id="verification-code" required />
+      //     <button type="button" id="verify-code-btn">인증 확인</button>
+      //   `;
+      //   form.appendChild(verificationBox);
+      //
+      //   // 3분 타이머 시작
+      //   if (verificationTimer) clearTimeout(verificationTimer);
+      //   verificationTimer = setTimeout(() => {
+      //     alert("3분 초과! 인증 코드를 다시 요청해주세요.");
+      //     verificationBox.remove();
+      //     verificationBox = null;
+      //   }, 180000);
+      //
+      //   // 인증 코드 확인 버튼 동작 추가
+      //   document.getElementById("verify-code-btn").addEventListener("click", async () => {
+      //     const code = document.getElementById("verification-code").value;
+      //
+      //     const verifyResponse = await fetch("/email-verification/verify", {
+      //       method: 'POST',
+      //       headers: {
+      //         "Content-Type": "application/json"
+      //       },
+      //       body: JSON.stringify({ email, code })
+      //     });
+      //
+      //     if (verifyResponse.ok) {
+      //       alert("이메일 인증 성공!");
+      //       clearTimeout(verificationTimer);
+      //       verificationBox.remove();
+      //       verificationBox = null;
+      //     } else {
+      //       alert("인증 실패! 코드가 틀렸거나 만료되었습니다.");
+      //     }
+      //   });
+      // } else {
+      //   alert("이메일 인증 요청 실패");
+      // }
+
+    }
+  });
+
+
+
+
+
 </script>
 </body>
 </html>

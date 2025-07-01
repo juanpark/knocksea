@@ -1,5 +1,6 @@
 spring:
   config:
+    import: optional:file:.env[.properties]
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -12,10 +13,27 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+  mail:
+    host: smtp.gmail.com # Gmail smtp 서버 주소
+    port: 587 #TSL 기반 이메일 발송에 사용되는 SMTP 서버 포트
+    username: ${GOOGLE_USERNAME} # SMTP 서버에 로그인하는 이메일 주소
+    password: ${GOOGLE_APP_PASSWORD} # Gmail 로그인용 앱 비밀번호
+    properties:
+      mail:
+        smtp:
+          auth: true # SMTP 서버 인증 사용 여부
+          starttls:
+            enable: true # 이메일을 평문이 아닌 암호화된 통신으로 전송하기 위함
+            required: true # TLS를 지원하지 않는 경우 메일 전송 실패
+          connectiontimeout: 5000 # SMTP 서버 연결할 때 연결 타임아웃 5초
+          timeout: 5000 # 서버 응답 기다리는 전체 읽기 타임아웃 5초
+          writetimeout: 5000 # 메일 전송 중 데이터 쓰는 데 걸리는 쓰기 타임아웃 5초
+      auth-code-expiration-millis: 180000 # 이메일 인증 코드 유효 시간 3초
 logging:
   level:
     org.springframework.web: DEBUG
     com.board: DEBUG
+
 
 jwt:
   secret: ${JWT_SECRET_KEY}
