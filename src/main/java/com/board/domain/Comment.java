@@ -9,27 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "comments")
 @Getter
 @Setter
+@Table(name = "comments")
 public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentId;
 
-    @Lob
-    private String content;
-
-    private int likeCount;
-    private int dislikeCount;
-
-    private boolean isAnswer = false;
-
-    private LocalDateTime createAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) //연관 엔티티 받을 때만 DB조회
     @JoinColumn(name = "posts_id")
     private Post post;
 
@@ -42,8 +31,23 @@ public class Comment {
     @JoinColumn(name = "parent_id")
     private Comment parent;
 
+    //Comment 엔티티 안의 parent 필드가 주인 (외래 키를 가진 쪽이 주인)
+    //게시글 저장,삭제 시 댓글도 저장,삭제 / 댓글 제거하면 DB에서도 삭제
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> children = new ArrayList<>();
+
+    @Lob
+    private String content;
+
+    private int likeCount;
+
+    private int dislikeCount;
+
+    private boolean isAnswer = false;
+
+    private LocalDateTime createAt = LocalDateTime.now();
+
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     // Post 연관관계 편의 메서드
     public void setPost(Post post) {
@@ -69,7 +73,7 @@ public class Comment {
 
     public void setParent(Comment parent) {
         this.parent = parent;
-        if (!parent.getChildren().contains(this)) {
+        if (parent != null && !parent.getChildren().contains(this)) {
             parent.getChildren().add(this);
         }
     }

@@ -38,6 +38,8 @@ public class Post {
 
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    private int viewCount;
+
     //Comment 엔티티의 post 필드가 주인 (외래 키를 가진 쪽이 주인)
     //게시글 저장,삭제 시 댓글도 저장,삭제 / 댓글 제거하면 DB에서도 삭제
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
