@@ -1,22 +1,17 @@
 package com.board.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -53,4 +48,27 @@ public class Member {
   @Column(nullable = false)
   @ColumnDefault("'LOCAL'")
   private Platform platform;
+  
+  
+  //Post 엔티티의 user 필드가 주인 (외래 키를 가진 쪽이 주인)
+  //게시글 저장,삭제 시 댓글도 저장,삭제 / 댓글 제거하면 DB에서도 삭제
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Post> posts = new ArrayList<>();
+
+  //Comment 엔티티의 user 필드가 주인 (외래 키를 가진 쪽이 주인)
+  //게시글 저장,삭제 시 댓글도 저장,삭제 / 댓글 제거하면 DB에서도 삭제
+  @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Comment> comments = new ArrayList<>();
+
+  //편의 메서드
+  public void addPost(Post post) {
+      posts.add(post);
+      post.setMember(this);
+  }
+
+  //편의 메서드
+  public void addComment(Comment comment) {
+      comments.add(comment);
+      comment.setMember(this);
+  }
 }
