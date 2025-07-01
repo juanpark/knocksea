@@ -145,4 +145,9 @@ Temporary Items
 *.icloud
 
 application.properties
-application.yml
+
+# Ignore all env files
+.env
+.env.*
+
+!src/main/resources/application.yml
