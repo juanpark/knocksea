@@ -59,6 +59,34 @@
         .create-button:hover {
             background-color: #1976D2;
         }
+        /* 페이징 스타일 */
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination a {
+            display: inline-block;
+            margin: 0 5px;
+            padding: 8px 12px;
+            background-color: #fff;
+            color: #2196F3;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .pagination a:hover {
+            background-color: #f0f0f0;
+        }
+        .pagination .current-page {
+            display: inline-block;
+            margin: 0 5px;
+            padding: 8px 12px;
+            background-color: #2196F3;
+            color: #fff;
+            border: 1px solid #2196F3;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -75,7 +103,17 @@
     <div th:each="post : ${posts}" class="post-card">
         <a th:href="@{/posts/{id}(id=${post.postsId})}" th:text="${post.title}" class="post-title">게시글 제목</a>
     </div>
-</div>
 
+    <div class="pagination">
+        <a th:if="${currentPage > 0}" th:href="@{'/posts?page=' + ${currentPage - 1}}">이전</a>
+
+        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+            <a th:if="${i != currentPage}" th:href="@{'/posts?page=' + ${i}}" th:text="${i + 1}"></a>
+            <span th:if="${i == currentPage}" th:text="${i + 1}" class="current-page"></span>
+        </span>
+
+        <a th:if="${currentPage + 1 < totalPages}" th:href="@{'/posts?page=' + ${currentPage + 1}}">다음</a>
+    </div>
+</div>
 </body>
 </html>

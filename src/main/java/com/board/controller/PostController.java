@@ -4,9 +4,11 @@ import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
 import com.board.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 
@@ -17,13 +19,13 @@ public class PostController {
 
     private final PostService postService;
 
-    //게시글 리스트 페이지
-    @GetMapping
-    public String getPostList(Model model) {
-        List<PostResponseDto> posts = postService.getAllPosts();
-        model.addAttribute("posts", posts);
-        return "post-list";
-    }
+    //게시글 리스트 페이지 -> 페이징 처리하면서 주석 처리
+//    @GetMapping
+//    public String getPostList(Model model) {
+//        List<PostResponseDto> posts = postService.getAllPosts();
+//        model.addAttribute("posts", posts);
+//        return "post-list";
+//    }
 
     //게시글 작성 페이지
     @GetMapping("/create")
@@ -68,5 +70,19 @@ public class PostController {
     public String deletePost(@PathVariable Long id) {
         postService.deletePost(id);
         return "redirect:/posts";
+    }
+
+    //페이징 처리
+    @GetMapping
+    //defaultValue가 0이지만 첫번째 페이지부터
+    public String getPostList(@RequestParam(defaultValue = "0") int page, Model model) {
+        int pageSize = 10;
+        Page<PostResponseDto> posts = postService.getPostsByPage(page, pageSize);
+
+        model.addAttribute("posts", posts.getContent()); // 현재 페이지 글 목록
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", posts.getTotalPages());
+
+        return "post-list";
     }
 }

@@ -8,6 +8,10 @@ import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
 import com.board.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,6 +113,17 @@ public class PostService {
         dto.setUpdatedAt(post.getUpdatedAt());
 
         return dto;
+    }
+
+    //페이징 처리
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> getPostsByPage(int page, int size) {
+        //몇 번째 페이지, 몇 개씩 가져올지, 글을 어떤 순서로 정렬할지 결정
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postsId"));
+        Page<Post> postPage = postRepository.findAll(pageable);
+
+        //Post 엔티티 -> DTO
+        return postPage.map(this::convertToResponseDto);
     }
 
 }
