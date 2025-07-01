@@ -10,10 +10,11 @@
 <body>
 <h1>회원가입</h1>
 
-<form id="login-form">
+<form id="register-form">
   <div>
     <label for="email">이메일:</label>
     <input type="email" id="email" name="email" required/>
+    <button type="button" id="email-verify">이메일 인증</button>
   </div>
   <div>
     <label for="password">비밀번호:</label>
@@ -26,14 +27,18 @@
   <div>
     <label for="nickname">닉네임:</label>
     <input type="text" id="nickname" name="nickname" required/>
+    <button type="button" id="check-nickname">닉네임 중복 확인</button>
   </div>
   <div>
-    <button type="submit">로그인</button>
+    <button type="submit">회원가입</button>
   </div>
 </form>
-<script>
-  const form = document.getElementById("login-form");
+<script th:inline="javascript">
+  const form = document.getElementById("register-form"); // 회원가입폼
+  const checkNicknameBtn = document.getElementById("check-nickname"); //닉네임중복확인버튼
+  const emailVerifyBtn = document.getElementById("email-verify");
 
+  // 회원가입 요청
   form.addEventListener("submit", async (e) => {
     e.preventDefault(); // 기본 submit 막기
 
@@ -50,9 +55,33 @@
       body: JSON.stringify({ email, password, nickname, name })
     });
 
-    window.location.href="/locallogin";
-
+    window.location.href="/login";
   });
+
+  // 닉네임 중복 확인 요청
+  checkNicknameBtn.addEventListener("click",async()=>{
+
+    const nickname = document.getElementById("nickname").value;
+
+    const response = await fetch(`/check-nickname?nickname=${nickname}`,{
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
+
+    if(response.ok){
+      const available = await response.json();
+      if(available) {
+        alert("사용 가능한 닉네임입니다.");
+        checkNicknameBtn.disabled=true;
+      }else {
+        alert("중복된 닉네임입니다.");
+      }
+    }else{
+      alert("확인 중 오류가 발생했습니다.");
+    }
+  })
 </script>
 </body>
 </html>
