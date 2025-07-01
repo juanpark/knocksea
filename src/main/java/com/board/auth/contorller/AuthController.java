@@ -1,12 +1,12 @@
-package com.board.controller;
+package com.board.auth.contorller;
 
+import com.board.auth.service.AuthService;
 import com.board.auth.CustomUserDetails;
 import com.board.dto.JwtTokenRequest;
 import com.board.dto.JwtTokenResponse;
 import com.board.dto.LogoutResponse;
 import com.board.dto.UserLogin;
 import com.board.dto.UserRegister;
-import com.board.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,12 +24,16 @@ public class AuthController {
 
   private final AuthService authService;
 
+  // 자체 로그인
+  // POST /login
   @PostMapping("/login")
   public ResponseEntity<JwtTokenResponse> localLogin(@RequestBody UserLogin userLogin) {
     JwtTokenResponse response = authService.localLogin(userLogin);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  // 자체 회원가입
+  // POST /register
   @PostMapping("/register")
   public ResponseEntity<String> localRegister(@RequestBody UserRegister userRegister) {
     try {
@@ -40,6 +44,8 @@ public class AuthController {
     }
   }
 
+  // 자체 로그아웃
+  // POST /logout
   @PostMapping("/logout")
   public ResponseEntity<LogoutResponse> localLogout(
       @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -53,6 +59,8 @@ public class AuthController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  // AccessToken 재발급
+  // POST /reissue
   @PostMapping("/reissue")
   public ResponseEntity<JwtTokenResponse> reissueAccessToken(
       @RequestBody JwtTokenRequest jwtTokenRequest) {

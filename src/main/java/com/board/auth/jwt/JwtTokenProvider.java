@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
  * */
 @Component
 public class JwtTokenProvider {
+
   private final Key secretKey;
   private final long accessTokenValidityTime;
   private final long refreshTokenValidityTime;
@@ -42,7 +43,7 @@ public class JwtTokenProvider {
       @Value("${jwt.access-token-validity-time}") long accessTokenValidityTime,
       @Value("${jwt.refresh-token-validity-time}") long refreshTokenValidityTime,
       MemberRepository memberRepository
-  ){
+  ) {
     byte[] keyBytes = Decoders.BASE64.decode(secretKey);
     this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     this.accessTokenValidityTime = accessTokenValidityTime;
@@ -73,8 +74,8 @@ public class JwtTokenProvider {
     return Jwts.builder()
         .setHeader(createHeaders())
         .setSubject(authentication.getName()) // 사용자 아이디 설정
-        .claim("iss","off")
-        .claim("auth",authorities) //권한 설정
+        .claim("iss", "off")
+        .claim("auth", authorities) //권한 설정
         .setExpiration(new Date(now + accessTokenValidityTime)) // 유효기간 1시간
         .setIssuedAt(new Date(now))
         .signWith(secretKey, SignatureAlgorithm.HS512)
@@ -88,13 +89,13 @@ public class JwtTokenProvider {
         .collect(Collectors.joining(","));
 
     long now = System.currentTimeMillis();
-    Date refreshTokenExpired = new Date(now + refreshTokenValidityTime ); // 유효기간 15일
+    Date refreshTokenExpired = new Date(now + refreshTokenValidityTime); // 유효기간 15일
 
     return Jwts.builder()
         .setHeader(createHeaders())
         .setSubject(authentication.getName())
-        .claim("iss","off")
-        .claim("auth",authorities) //권한 설정
+        .claim("iss", "off")
+        .claim("auth", authorities) //권한 설정
         .setExpiration(refreshTokenExpired)
         .setIssuedAt(new Date(now))
         .signWith(secretKey, SignatureAlgorithm.HS512)
@@ -106,7 +107,7 @@ public class JwtTokenProvider {
     Claims claims = parseClaims(token);
 
     // 보안상 권한이 없는 사용자에 대한 인증을 막음
-    if(claims.get("auth") == null){
+    if (claims.get("auth") == null) {
       throw new RuntimeException("권한 정보가 없는 토큰입니다.");
     }
 
@@ -127,7 +128,7 @@ public class JwtTokenProvider {
 
   //JWT 유효성 검증
   public boolean validateToken(String token) {
-    try{
+    try {
       Jwts
           .parserBuilder()
           .setSigningKey(secretKey)
@@ -157,7 +158,7 @@ public class JwtTokenProvider {
         .getExpiration();
   }
 
-  public String extractEmail(String token){
+  public String extractEmail(String token) {
     return Jwts.parserBuilder()
         .setSigningKey(secretKey)
         .build()
@@ -171,19 +172,19 @@ public class JwtTokenProvider {
   만료된 경우에도 payload 정보 꺼내기 위해 try~catch문 사용
   */
   private Claims parseClaims(String token) {
-    try{
+    try {
       return Jwts.parserBuilder()
           .setSigningKey(secretKey)
           .build()
           .parseClaimsJws(token)
           .getBody();
-    }catch(ExpiredJwtException e){
+    } catch (ExpiredJwtException e) {
       return e.getClaims();
     }
   }
 
   //JWT Header 설정
-  private Map<String, Object> createHeaders(){
+  private Map<String, Object> createHeaders() {
     Map<String, Object> headers = new HashMap<>();
     headers.put("typ", "JWT");
     headers.put("alg", "HS512");

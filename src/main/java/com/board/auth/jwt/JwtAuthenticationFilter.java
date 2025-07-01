@@ -17,20 +17,21 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtTokenProvider jwtTokenProvider;
-  private final List<String> excludedPaths = List.of("/login","/signup","/register","/.well-known/appspecific/com.chrome.devtools.json");
+  private final List<String> excludedPaths = List.of("/login", "/signup", "/register",
+      "/.well-known/appspecific/com.chrome.devtools.json");
 
   //필터 제외할 경로 설정
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
     String requestURI = request.getRequestURI();
-    log.info("[JwtAuthenticationFilter shouldNotFilter] 현재 요청한 URI : {}",requestURI);
+    log.info("[JwtAuthenticationFilter shouldNotFilter] 현재 요청한 URI : {}", requestURI);
     return excludedPaths.stream().anyMatch(requestURI::startsWith);
   }
 
   //요청의 Authorization Header 헤더에서 토큰 추출
   private String resolveToken(HttpServletRequest request) {
     String bearer = request.getHeader("Authorization");
-    if(bearer != null && bearer.startsWith("Bearer ")) {
+    if (bearer != null && bearer.startsWith("Bearer ")) {
       log.info("[JwtAuthenticationFilter resolveToken] bearer: {}", bearer);
       return bearer.substring(7);
     }
@@ -45,14 +46,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String token = resolveToken(request);
     log.info("[JwtAuthenticationFilter doFilterInternal] JWT token: {}", token);
 
-    if(token != null) {
-      try{
-        if(jwtTokenProvider.validateToken(token)) {
+    if (token != null) {
+      try {
+        if (jwtTokenProvider.validateToken(token)) {
           Authentication authentication = jwtTokenProvider.getAuthentication(token);
           SecurityContextHolder.getContext().setAuthentication(authentication);
-          log.info("[JwtAuthenticationFilter doFilterInternal] 사용자 정보: {}", authentication.getPrincipal());
+          log.info("[JwtAuthenticationFilter doFilterInternal] 사용자 정보: {}",
+              authentication.getPrincipal());
         }
-      }catch(Exception e){
+      } catch (Exception e) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().println(e.getMessage());
         return;

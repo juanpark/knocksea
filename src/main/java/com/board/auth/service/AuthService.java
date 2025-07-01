@@ -1,4 +1,4 @@
-package com.board.service;
+package com.board.auth.service;
 
 import com.board.auth.CustomUserDetails;
 import com.board.auth.jwt.JwtToken;
@@ -16,14 +16,8 @@ import com.board.dto.UserRegister;
 import com.board.repository.MemberRepository;
 import com.board.repository.TokenRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +36,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.function.ServerRequest.Headers;
 
 /*
  * AuthService
@@ -71,11 +64,11 @@ public class AuthService {
 
   // 로컬 로그인
   @Transactional
-  public JwtTokenResponse localLogin(UserLogin userLogin)  {
+  public JwtTokenResponse localLogin(UserLogin userLogin) {
     Authentication authentication = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(userLogin.getEmail(), userLogin.getPassword()));
 
-    return createTokenAndSave(authentication,"로그인 완료");
+    return createTokenAndSave(authentication, "로그인 완료");
   }
 
   // 로컬 회원가입
@@ -167,11 +160,11 @@ public class AuthService {
         userDetails, null, userDetails.getAuthorities());
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    return createTokenAndSave(authentication,"카카오 로그인 완료");
+    return createTokenAndSave(authentication, "카카오 로그인 완료");
   }
 
   // Token 생성 및 저장
-  private JwtTokenResponse createTokenAndSave(Authentication authentication,String message) {
+  private JwtTokenResponse createTokenAndSave(Authentication authentication, String message) {
     JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
 
     LocalDateTime expiredAt = jwtTokenProvider.getExpiration(jwtToken.getRefreshToken())
@@ -247,6 +240,5 @@ public class AuthService {
     } catch (JsonProcessingException e) {
       throw new RuntimeException("카카오 프로필 응답 파싱 실패", e);
     }
-
   }
 }

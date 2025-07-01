@@ -11,11 +11,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /*
-* Spring Security가 인증처리에 사용하는 사용자 정보
-* */
+ * Spring Security가 인증처리에 사용하는 사용자 정보
+ * */
 @Getter
 @Builder
 public class CustomUserDetails implements UserDetails {
+
   private final Member member;
 
   public CustomUserDetails(Member member) {
@@ -31,9 +32,9 @@ public class CustomUserDetails implements UserDetails {
   public String getPassword() {
 
     //카카오 로그인 사용자일 경우 password는 null
-    if(member.getPlatform() == Platform.KAKAO){
+    if (member.getPlatform() == Platform.KAKAO) {
       return null;
-    }else{
+    } else {
       return member.getPassword();
     }
   }
