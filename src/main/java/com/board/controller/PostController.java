@@ -74,10 +74,11 @@ public class PostController {
         return "redirect:/posts/page";
     }
 
-    //페이징 조회 → URL 변경, 검색어 기능 추가
+    //페이징 조회 → URL 변경, 검색어 기능 추가, 정렬 기능 추가
     @GetMapping("/page")
     public String getPostList(@RequestParam(defaultValue = "0") int page,
                               @RequestParam(required = false) String keyword,
+                              @RequestParam(defaultValue = "recent") String sort,
                               Model model)
     {
         int pageSize = 10;
@@ -85,15 +86,16 @@ public class PostController {
 
         //검색어 있으면 검색 결과 페이지 조회
         if (keyword != null && !keyword.isEmpty()) {
-            posts = postService.searchPostsByKeyword(keyword, page, pageSize);
+            posts = postService.searchPostsByKeyword(keyword, page, pageSize, sort);
         } else {
-            posts = postService.getPostsByPage(page, pageSize);
+            posts = postService.getPostsByPage(page, pageSize, sort);
         }
 
         model.addAttribute("posts", posts.getContent()); //현재 페이지 글 목록
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", posts.getTotalPages());
         model.addAttribute("keyword", keyword); //검색어
+        model.addAttribute("sort", sort); //정렬
 
         return "post-list";
     }

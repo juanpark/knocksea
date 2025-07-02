@@ -33,6 +33,7 @@
         }
         .search-form {
             display: flex;
+            align-items: center;
         }
         .search-form input {
             padding: 8px;
@@ -50,6 +51,13 @@
         }
         .search-form button:hover {
             background-color: #1976D2;
+        }
+        .search-form select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            margin-left: 10px;
+            cursor: pointer;
         }
         .create-button {
             padding: 10px 20px;
@@ -137,6 +145,11 @@
         <form method="get" action="/posts/page" class="search-form">
             <input type="text" name="keyword" placeholder="검색어를 입력하세요" th:value="${keyword}">
             <button type="submit">검색</button>
+
+            <select name="sort" onchange="this.form.submit()">
+                <option value="recent" th:selected="${sort == 'recent'}">최신순</option>
+                <option value="views" th:selected="${sort == 'views'}">조회수순</option>
+            </select>
         </form>
     </div>
 
@@ -151,11 +164,11 @@
 
     <div class="pagination">
         <a th:if="${currentPage > 0}"
-           th:href="@{'/posts/page?page=' + ${currentPage - 1} + '&keyword=' + ${keyword}}">이전</a>
+           th:href="@{'/posts/page?page=' + ${currentPage - 1} + '&keyword=' + ${keyword} + '&sort=' + ${sort}}">이전</a>
 
         <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
             <a th:if="${i != currentPage}"
-               th:href="@{'/posts/page?page=' + ${i} + '&keyword=' + ${keyword}}"
+               th:href="@{'/posts/page?page=' + ${i} + '&keyword=' + ${keyword} + '&sort=' + ${sort}}"
                th:text="${i + 1}"></a>
 
             <span th:if="${i == currentPage}"
@@ -164,7 +177,7 @@
         </span>
 
         <a th:if="${currentPage + 1 < totalPages}"
-           th:href="@{'/posts/page?page=' + ${currentPage + 1} + '&keyword=' + ${keyword}}">다음</a>
+           th:href="@{'/posts/page?page=' + ${currentPage + 1} + '&keyword=' + ${keyword} + '&sort=' + ${sort}}">다음</a>
     </div>
 
 </div>
