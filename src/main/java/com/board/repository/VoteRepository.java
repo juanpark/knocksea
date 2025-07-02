@@ -14,5 +14,5 @@ public interface VoteRepository extends JpaRepository<Vote, Long> {
     Optional<Vote> findByMemberAndTargetIdAndTargetType(Member member, Long targetId, TargetType targetType);
 
     // 추천 수 / 비추천 수 세기
-    long countByTargetIdAndTargetTypeAndIsLike(Long targetId, TargetType targetType, VoteType isLike);
+    long countByTargetIdAndTargetTypeAndVoteType(Long targetId, TargetType targetType, VoteType voteType);
 }
