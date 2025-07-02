@@ -16,8 +16,8 @@ spring:
   mail:
     host: smtp.gmail.com # Gmail smtp 서버 주소
     port: 587 #TSL 기반 이메일 발송에 사용되는 SMTP 서버 포트
-    username: ${GOOGLE_USERNAME} # SMTP 서버에 로그인하는 이메일 주소
-    password: ${GOOGLE_APP_PASSWORD} # Gmail 로그인용 앱 비밀번호
+    username: ${GOOGLE_MAIL_USERNAME} # SMTP 서버에 로그인하는 이메일 주소
+    password: ${GOOGLE_MAIL_APP_PASSWORD} # Gmail 로그인용 앱 비밀번호
     properties:
       mail:
         smtp:
