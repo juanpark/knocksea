@@ -21,7 +21,7 @@ public class VoteController {
         // 임시 Member 생성 (나중에 로그인 연동되면 교체)
         Member mockMember = Member.builder().id(1L).nickname("guest").build();
 
-        voteService.vote(mockMember, dto.getTargetId(), dto.getTargetType(), dto.getIsLike());
+        voteService.vote(mockMember, dto.getTargetId(), dto.getTargetType(), dto.getVoteType());
 
         return ResponseEntity.ok("투표 완료!");
     }
@@ -29,8 +29,8 @@ public class VoteController {
     @GetMapping("/count")
     public ResponseEntity<?> countVotes(@RequestParam Long targetId,
                                         @RequestParam TargetType targetType,
-                                        @RequestParam VoteType isLike) {
-        long count = voteService.countVotes(targetId, targetType, isLike);
+                                        @RequestParam VoteType voteType) {
+        long count = voteService.countVotes(targetId, targetType, voteType);
         return ResponseEntity.ok(count);
     }
 }

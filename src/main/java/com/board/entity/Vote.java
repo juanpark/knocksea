@@ -22,7 +22,6 @@ public class Vote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // User → Member 로 수정
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -35,8 +34,8 @@ public class Vote {
     private TargetType targetType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_like", nullable = false)
-    private VoteType isLike;
+    @Column(name = "vote_type", nullable = false)
+    private VoteType voteType;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
