@@ -6,7 +6,9 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -51,7 +53,7 @@ public class Post {
             joinColumns = @JoinColumn(name = "posts_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
-    private List<Category> categories = new ArrayList<>();
+    private Set<Category> categories = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
@@ -59,7 +61,7 @@ public class Post {
             joinColumns = @JoinColumn(name = "posts_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    private List<Tag> tags = new ArrayList<>();
+    private Set<Tag> tags = new HashSet<>();
 
     //게시글 상태
     public enum Status {
