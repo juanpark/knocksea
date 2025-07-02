@@ -1,7 +1,9 @@
 package com.board.controller;
 
+import com.board.domain.Member;
 import com.board.dto.VoteRequestDto;
-import com.board.entity.*;
+import com.board.entity.TargetType;
+import com.board.entity.VoteType;
 import com.board.service.VoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +18,10 @@ public class VoteController {
 
     @PostMapping
     public ResponseEntity<?> vote(@RequestBody VoteRequestDto dto) {
-        // 임시 유저 생성 (나중에 로그인 연동되면 교체)
-        User mockUser = User.builder().id(1L).nickname("guest").build();
+        // 임시 Member 생성 (나중에 로그인 연동되면 교체)
+        Member mockMember = Member.builder().id(1L).nickname("guest").build();
 
-        voteService.vote(mockUser, dto.getTargetId(), dto.getTargetType(), dto.getIsLike());
+        voteService.vote(mockMember, dto.getTargetId(), dto.getTargetType(), dto.getIsLike());
 
         return ResponseEntity.ok("투표 완료!");
     }
