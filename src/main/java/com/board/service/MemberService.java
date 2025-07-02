@@ -24,4 +24,9 @@ public class MemberService {
   public Member findByEmail(String email) {
     return memberRepository.findByEmail(email).orElse(null);
   }
+
+  // 사용자 닉네임 중복 확인
+  public boolean checkNickname(String nickname){
+    return memberRepository.existsByNickname(nickname);
+  }
 }

@@ -39,7 +39,7 @@ import org.springframework.web.client.RestTemplate;
 
 /*
  * AuthService
- * 사용자 자체 로그인&회원가입
+ * 사용자 이메일 로그인&회원가입
  * 카카오 로그인
  * JWT 토큰 발급, 재발급 관련 로직
  * */
