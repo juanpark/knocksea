@@ -6,12 +6,11 @@ import com.board.dto.EmailCodeVerificationRequest;
 import com.board.dto.EmailVerificationRequest;
 import com.board.dto.JwtTokenRequest;
 import com.board.dto.JwtTokenResponse;
-import com.board.dto.LogoutResponse;
+import com.board.dto.MessageResponse;
 import com.board.dto.UserLogin;
 import com.board.dto.UserRegister;
 import com.board.service.MailService;
 import com.board.service.MemberService;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -45,33 +44,41 @@ public class AuthController {
   // 이메일 인증 코드 요청 (중복이메일 검증 후 인증코드 전송)
   @PostMapping("/email-verification")
   @ResponseBody
-  public ResponseEntity<String> sendVerification(
+  public ResponseEntity<MessageResponse> sendVerification(
       @RequestBody EmailVerificationRequest emailVerificationRequest) {
+    MessageResponse emailResponse;
     try {
       if (memberService.findByEmail(emailVerificationRequest.getEmail()) != null) {
-        return new ResponseEntity<>("이미 존재하는 이메일입니다.", HttpStatus.BAD_REQUEST);
+        emailResponse = MessageResponse.builder().message("중복된 이메일입니다.").build();
+        return new ResponseEntity<>(emailResponse, HttpStatus.BAD_REQUEST);
       } else {
-        mailService.sendVerificationCode(emailVerificationRequest.getEmail());
-        return new ResponseEntity<>("이메일을 전송했습니다. 확인해주세요.", HttpStatus.OK);
+        emailResponse = mailService.sendVerificationCode(emailVerificationRequest.getEmail());
+        return new ResponseEntity<>(emailResponse, HttpStatus.OK);
       }
     } catch (Exception e) {
-      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+      emailResponse = MessageResponse.builder().message(e.getMessage()).build();
+      return new ResponseEntity<>(emailResponse, HttpStatus.BAD_REQUEST);
     }
   }
 
+  // 인증코드 검증
   @PostMapping("/email-verification/verify")
   @ResponseBody
-  public ResponseEntity<String> codeVerification(
+  public ResponseEntity<MessageResponse> codeVerification(
       @RequestBody EmailCodeVerificationRequest emailCodeVerificationRequest) {
+    MessageResponse emailResponse;
     try {
       if (mailService.codeVerification(emailCodeVerificationRequest.getEmail(),
           emailCodeVerificationRequest.getCode())) {
-        return new ResponseEntity<>("이메일 인증 성공", HttpStatus.OK);
+        emailResponse = MessageResponse.builder().message("이메일 인증 성공").build();
+        return new ResponseEntity<>(emailResponse,HttpStatus.OK);
       } else {
-        return new ResponseEntity<>("이메일 인증 실패", HttpStatus.OK);
+        emailResponse = MessageResponse.builder().message("이메일 인증 실패").build();
+        return new ResponseEntity<>(emailResponse, HttpStatus.OK);
       }
     } catch (Exception e) {
-      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+      emailResponse = MessageResponse.builder().message(e.getMessage()).build();
+      return new ResponseEntity<>(emailResponse, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -105,6 +112,7 @@ public class AuthController {
   @ResponseBody
   public ResponseEntity<String> localRegister(@RequestBody UserRegister userRegister) {
     try {
+      log.info("localRegister userRegister: {}", userRegister.toString());
       String email = authService.register(userRegister);
       return new ResponseEntity<>(email, HttpStatus.CREATED);
     } catch (IllegalArgumentException e) {
@@ -116,15 +124,15 @@ public class AuthController {
   // POST /logout
   @PostMapping("/logout")
   @ResponseBody
-  public ResponseEntity<LogoutResponse> localLogout(
+  public ResponseEntity<MessageResponse> localLogout(
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     if (userDetails == null) {
-      LogoutResponse response = LogoutResponse.builder().message("잘못된 토큰 형식입니다.").build();
+      MessageResponse response = MessageResponse.builder().message("잘못된 토큰 형식입니다.").build();
       return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     String email = userDetails.getUsername();
-    LogoutResponse response = authService.removeRefreshToken(email);
+    MessageResponse response = authService.removeRefreshToken(email);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 

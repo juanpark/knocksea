@@ -17,6 +17,11 @@
     <button type="button" id="email-verify">이메일 인증</button>
   </div>
   <div>
+    <label for="code">인증코드:</label>
+    <input type="text" id="code" name="code" required />
+    <button type="button" id="code-verify">인증</button>
+  </div>
+  <div>
     <label for="password">비밀번호:</label>
     <input type="password" id="password" name="password" required/>
   </div>
@@ -36,7 +41,9 @@
 <script th:inline="javascript">
   const form = document.getElementById("register-form"); // 회원가입폼
   const checkNicknameBtn = document.getElementById("check-nickname"); //닉네임중복확인버튼
-  const emailVerifyBtn = document.getElementById("email-verify");
+  const emailVerifyBtn = document.getElementById("email-verify"); //이메일중복확인및코드요청버튼
+  const codeVerifyBtn = document.getElementById("code-verify");//이메일인증코드검증요청버튼
+
 
   // 회원가입 요청
   form.addEventListener("submit", async (e) => {
@@ -96,60 +103,32 @@
       body: JSON.stringify({ email })
     })
 
+    const data = await response.json();
     if(response.ok) {
-      const result = await response.json();
-      alert(result);
-
-      //   // 인증 코드 입력 박스 생성
-      //   verificationBox = document.createElement("div");
-      //   verificationBox.id = "verification-box";
-      //   verificationBox.innerHTML = `
-      //     <label for="verification-code">인증 코드:</label>
-      //     <input type="text" id="verification-code" required />
-      //     <button type="button" id="verify-code-btn">인증 확인</button>
-      //   `;
-      //   form.appendChild(verificationBox);
-      //
-      //   // 3분 타이머 시작
-      //   if (verificationTimer) clearTimeout(verificationTimer);
-      //   verificationTimer = setTimeout(() => {
-      //     alert("3분 초과! 인증 코드를 다시 요청해주세요.");
-      //     verificationBox.remove();
-      //     verificationBox = null;
-      //   }, 180000);
-      //
-      //   // 인증 코드 확인 버튼 동작 추가
-      //   document.getElementById("verify-code-btn").addEventListener("click", async () => {
-      //     const code = document.getElementById("verification-code").value;
-      //
-      //     const verifyResponse = await fetch("/email-verification/verify", {
-      //       method: 'POST',
-      //       headers: {
-      //         "Content-Type": "application/json"
-      //       },
-      //       body: JSON.stringify({ email, code })
-      //     });
-      //
-      //     if (verifyResponse.ok) {
-      //       alert("이메일 인증 성공!");
-      //       clearTimeout(verificationTimer);
-      //       verificationBox.remove();
-      //       verificationBox = null;
-      //     } else {
-      //       alert("인증 실패! 코드가 틀렸거나 만료되었습니다.");
-      //     }
-      //   });
-      // } else {
-      //   alert("이메일 인증 요청 실패");
-      // }
-
+      alert(data.message);
+    }else{
+      alert(data.message);
     }
   });
 
+  //인증코드 검증 요청
+  codeVerifyBtn.addEventListener("click",async()=>{
+    const email = document.getElementById("email").value;
+    const code = document.getElementById("code").value;
 
-
-
-
+    const response = await fetch("/email-verification/verify",{
+      method: 'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email,code})
+    });
+    const data = await response.json();
+    if(response.ok){
+      alert(data.message);
+      codeVerifyBtn.disabled=true;
+    }else{
+      alert(data.message);
+    }
+  })
 </script>
 </body>
 </html>

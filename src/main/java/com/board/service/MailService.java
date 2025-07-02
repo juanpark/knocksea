@@ -1,5 +1,6 @@
 package com.board.service;
 
+import com.board.dto.MessageResponse;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Map;
@@ -27,9 +28,10 @@ public class MailService {
 
 
   // 인증 메일 전송
-  public void sendVerificationCode(String email) {
+  public MessageResponse sendVerificationCode(String email) {
     MimeMessage mimeMessage = createMessage(email);
     javaMailSender.send(mimeMessage);
+    return MessageResponse.builder().message("인증코드를 발송했습니다. 메일을 확인해주세요.").build();
   }
 
   // 인증 코드 확인
