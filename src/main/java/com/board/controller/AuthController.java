@@ -1,4 +1,4 @@
-package com.board.auth.contorller;
+package com.board.controller;
 
 import com.board.auth.service.AuthService;
 import com.board.auth.CustomUserDetails;
