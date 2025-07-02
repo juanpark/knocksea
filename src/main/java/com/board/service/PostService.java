@@ -137,9 +137,9 @@ public class PostService {
 
     //페이징 처리
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> getPostsByPage(int page, int size) {
+    public Page<PostResponseDto> getPostsByPage(int page, int size, String sort) {
         //몇 번째 페이지, 몇 개씩 가져올지, 글을 어떤 순서로 정렬할지 결정
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postsId"));
+        Pageable pageable = createPageable(page, size, sort);
         Page<Post> postPage = postRepository.findAll(pageable);
 
         //Post 엔티티 -> DTO
@@ -148,8 +148,8 @@ public class PostService {
 
     //게시글 검색 기능
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> searchPostsByKeyword(String keyword, int page, int pageSize) {
-        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "postsId"));
+    public Page<PostResponseDto> searchPostsByKeyword(String keyword, int page, int pageSize, String sort) {
+        Pageable pageable = createPageable(page, pageSize, sort);
 
         //제목 또는 내용에 keyword가 포함된 게시글 조회
         Page<Post> postPage = postRepository.findByTitleContainingOrContentContaining(keyword, keyword, pageable);
@@ -166,6 +166,25 @@ public class PostService {
 
             return dto;
         });
+    }
+
+    //정렬 기능
+    private Pageable createPageable(int page, int size, String sort) {
+        Sort sortOption;
+
+        switch (sort) {
+            //조회수로 정렬
+            case "views":
+                sortOption = Sort.by(Sort.Direction.DESC, "viewCount");
+                break;
+                //최신순으로 정렬
+            case "recent":
+            default:
+                sortOption = Sort.by(Sort.Direction.DESC, "postsId");
+                break;
+        }
+
+        return PageRequest.of(page, size, sortOption);
     }
 
     // 카테고리, 태그, 상태로 검색
