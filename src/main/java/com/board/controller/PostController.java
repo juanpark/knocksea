@@ -74,9 +74,8 @@ public class PostController {
         return "redirect:/posts";
     }
 
-    //페이징 처리
-    @GetMapping
-    //defaultValue가 0이지만 첫번째 페이지부터
+    //페이징 조회 → URL 변경
+    @GetMapping("/page")
     public String getPostList(@RequestParam(defaultValue = "0") int page, Model model) {
         int pageSize = 10;
         Page<PostResponseDto> posts = postService.getPostsByPage(page, pageSize);
