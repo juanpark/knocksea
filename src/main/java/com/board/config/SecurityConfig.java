@@ -2,6 +2,7 @@ package com.board.config;
 
 import com.board.auth.jwt.JwtAuthenticationFilter;
 import com.board.auth.jwt.JwtTokenProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +22,7 @@ public class SecurityConfig {
 
   private final JwtTokenProvider jwtTokenProvider;
 
+  @Autowired
   public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
     this.jwtTokenProvider = jwtTokenProvider;
   }
