@@ -22,6 +22,9 @@ public class HomeController {
   @Value("${kakao.redirect-uri}")
   private String redirectUri;
 
+  @Value("${google.secret}")
+  private String googleMapKey;
+
   @GetMapping("/")
   public String home(Model model) {
     return "home";
@@ -44,5 +47,11 @@ public class HomeController {
   @GetMapping("/register")
   public String register() {
     return "register";
+  }
+
+  @GetMapping("/map")
+  public String map(Model model) {
+    model.addAttribute("googleMapKey", googleMapKey);
+    return "map";
   }
 }

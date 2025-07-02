@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>낚시터 지도</title>
+  <style>
+    #map {
+      width: 100%;
+      height: 600px;
+    }
+  </style>
+  <!-- ✅ Google Maps API 키 필요 -->
+  <script async defer
+          th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapKey} + '&callback=initMap'}">
+  </script>
+</head>
+<body>
+<h2>전국 낚시터 지도</h2>
+<div id="map"></div>
+
+<script>
+  let map;
+
+  function initMap() {
+    map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: 36.5, lng: 127.5 }, // 전국 중심
+      zoom: 7,
+    });
+
+    // 📌 낚시터 API에서 마커 정보 가져오기
+    fetch('/map/fishing-spots')
+    .then(res => res.json())
+    .then(data => {
+      data.forEach(spot => {
+        if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
+          const pos = {lat:spot.latitude, lng:spot.longitude};
+
+          const marker = new google.maps.Marker({
+            position: pos,
+            map: map,
+            title: spot.name,
+            icon: {
+              url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png", // 🔴 빨간 마커 아이콘
+            }
+          });
+        }
+      });
+    })
+    .catch(err => {
+      console.error("마커 로딩 실패:", err);
+    });
+  }
+</script>
+</body>
+</html>
