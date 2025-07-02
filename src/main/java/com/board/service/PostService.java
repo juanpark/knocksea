@@ -1,9 +1,15 @@
 package com.board.service;
 
+import com.board.domain.Category;
 import com.board.domain.Post;
+import com.board.domain.Tag;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
+import com.board.repository.CategoryRepository;
 import com.board.repository.PostRepository;
+import com.board.repository.TagRepository;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 //쓰기/수정/삭제 -> @Transactional (실제 DB의 데이터를 실제로 바꿈. 즉, 에러나면 롤백 필요)
 //읽기 -> @Transactional(readOnly = true) (조회는 데이터를 안바꿈. 롤백 기능 필요 없음)
@@ -24,6 +31,8 @@ import java.util.List;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final CategoryRepository categoryRepo;
+    private final TagRepository tagRepo;
 
     //게시글 저장
     @Transactional
@@ -33,6 +42,16 @@ public class PostService {
         Post post = new Post();
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
+
+        if (requestDto.getCategoryIds() != null) {
+            List<Category> categories = categoryRepo.findAllById(requestDto.getCategoryIds());
+            post.getCategories().addAll(categories);
+        }
+
+        if (requestDto.getTagIds() != null) {
+            List<Tag> tags = tagRepo.findAllById(requestDto.getTagIds());
+            post.getTags().addAll(tags);
+        }
 
         Post savedPost = postRepository.save(post);
         return savedPost.getPostsId();
@@ -125,6 +144,59 @@ public class PostService {
 
         //Post 엔티티 -> DTO
         return postPage.map(this::convertToResponseDto);
+    }
+
+    //게시글 검색 기능
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> searchPostsByKeyword(String keyword, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "postsId"));
+
+        //제목 또는 내용에 keyword가 포함된 게시글 조회
+        Page<Post> postPage = postRepository.findByTitleContainingOrContentContaining(keyword, keyword, pageable);
+
+        return postPage.map(post -> {
+            PostResponseDto dto = convertToResponseDto(post);
+
+            //하이라이팅 처리, ?!로 대소문자 무시하여 검색어 발견하면 감쌈
+            if (keyword != null && !keyword.isEmpty()) {
+                String regex = "(?i)(" + Pattern.quote(keyword) + ")";
+                String highlightedTitle = post.getTitle().replaceAll(regex, "<span class='highlight'>$1</span>");
+                dto.setTitle(highlightedTitle);
+            }
+
+            return dto;
+        });
+    }
+
+    // 카테고리, 태그, 상태로 검색
+    public List<Post> searchPosts(Long categoryId, Long tagId, Post.Status status) {
+        return postRepository.findAll((root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            if (categoryId != null) {
+                Join<Post, Category> catJoin = root.join("categories");
+                predicates.add(cb.equal(catJoin.get("id"), categoryId));
+            }
+
+            if (tagId != null) {
+                Join<Post, Tag> tagJoin = root.join("tags");
+                predicates.add(cb.equal(tagJoin.get("id"), tagId));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        });
+    }
+
+    // 질문상태 업데이트
+    public void updateStatus(Long postId, Post.Status status) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        post.setStatus(status);
+        postRepository.save(post);
     }
 
 }

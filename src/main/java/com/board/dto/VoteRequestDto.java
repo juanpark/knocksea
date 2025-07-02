@@ -10,6 +10,6 @@ import lombok.Setter;
 public class VoteRequestDto {
     private Long targetId;
     private TargetType targetType;
-    private VoteType isLike;
+    private VoteType voteType;
 }
 

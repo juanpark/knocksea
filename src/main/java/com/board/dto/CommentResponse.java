@@ -9,11 +9,11 @@ import java.util.List;
 // 댓글 조회 결과 응답 (계층 구조 포함)
 @Getter
 @Setter
-public class CommentResponse {
+public class  CommentResponse {
 
     private Long commentId;
-    private Long userId;
-    private String nickname;         // 작성자 닉네임
+    private Long userId;             // 작성자 ID (Member 엔티티 기준)
+    private String nickname;         // 작성자 닉네임 (Member 엔티티 기준)
     private String content;
 
     private boolean answer;
