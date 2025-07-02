@@ -90,7 +90,7 @@
     <form id="deleteForm" th:action="@{/posts/{id}/delete(id=${post.postsId})}" method="post" style="display:none;"></form>
   </div>
 
-  <a href="/posts" class="back-link">목록으로</a>
+  <a th:href="@{/posts/page}" class="back-link">목록으로</a>
 </div>
 
 </body>
