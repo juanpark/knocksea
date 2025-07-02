@@ -1,11 +1,15 @@
 package com.board.service;
 
+import com.board.domain.Category;
 import com.board.domain.Post;
+import com.board.domain.Tag;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
 import com.board.repository.CategoryRepository;
 import com.board.repository.PostRepository;
 import com.board.repository.TagRepository;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,13 +42,13 @@ public class PostService {
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
 
-        if (dto.getCategoryIds() != null) {
-            List<Category> categories = categoryRepo.findAllById(dto.getCategoryIds());
+        if (requestDto.getCategoryIds() != null) {
+            List<Category> categories = categoryRepo.findAllById(requestDto.getCategoryIds());
             post.getCategories().addAll(categories);
         }
 
-        if (dto.getTagIds() != null) {
-            List<Tag> tags = tagRepo.findAllById(dto.getTagIds());
+        if (requestDto.getTagIds() != null) {
+            List<Tag> tags = tagRepo.findAllById(requestDto.getTagIds());
             post.getTags().addAll(tags);
         }
 
@@ -143,7 +147,7 @@ public class PostService {
 
     // 카테고리, 태그, 상태로 검색
     public List<Post> searchPosts(Long categoryId, Long tagId, Post.Status status) {
-        return postRepo.findAll((root, query, cb) -> {
+        return postRepository.findAll((root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (status != null) {
@@ -166,10 +170,10 @@ public class PostService {
 
     // 질문상태 업데이트
     public void updateStatus(Long postId, Post.Status status) {
-        Post post = postRepo.findById(postId)
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         post.setStatus(status);
-        postRepo.save(post);
+        postRepository.save(post);
     }
 
 }
