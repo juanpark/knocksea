@@ -1,11 +1,16 @@
 package com.board.entity;
 
+import com.board.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "votes", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "target_id", "target_type"}))
+@Table(
+        name = "votes",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "target_id", "target_type"})
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,9 +22,10 @@ public class Vote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // User → Member 로 수정
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Column(name = "target_id", nullable = false)
     private Long targetId;
