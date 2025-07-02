@@ -40,7 +40,7 @@ public class PostController {
     //form에서 받은 내용을 받아 service.createPost 메서드 실행
     public String createPost(@ModelAttribute PostRequestDto requestDto) {
         postService.createPost(requestDto);
-        return "redirect:/posts";
+        return "redirect:/posts/page";
     }
 
     //게시글 상세 페이지
@@ -71,18 +71,29 @@ public class PostController {
     @PostMapping("/{id}/delete")
     public String deletePost(@PathVariable Long id) {
         postService.deletePost(id);
-        return "redirect:/posts";
+        return "redirect:/posts/page";
     }
 
-    //페이징 조회 → URL 변경
+    //페이징 조회 → URL 변경, 검색어 기능 추가
     @GetMapping("/page")
-    public String getPostList(@RequestParam(defaultValue = "0") int page, Model model) {
+    public String getPostList(@RequestParam(defaultValue = "0") int page,
+                              @RequestParam(required = false) String keyword,
+                              Model model)
+    {
         int pageSize = 10;
-        Page<PostResponseDto> posts = postService.getPostsByPage(page, pageSize);
+        Page<PostResponseDto> posts;
 
-        model.addAttribute("posts", posts.getContent()); // 현재 페이지 글 목록
+        //검색어 있으면 검색 결과 페이지 조회
+        if (keyword != null && !keyword.isEmpty()) {
+            posts = postService.searchPostsByKeyword(keyword, page, pageSize);
+        } else {
+            posts = postService.getPostsByPage(page, pageSize);
+        }
+
+        model.addAttribute("posts", posts.getContent()); //현재 페이지 글 목록
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", posts.getTotalPages());
+        model.addAttribute("keyword", keyword); //검색어
 
         return "post-list";
     }

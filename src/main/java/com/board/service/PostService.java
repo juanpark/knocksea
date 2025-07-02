@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 //쓰기/수정/삭제 -> @Transactional (실제 DB의 데이터를 실제로 바꿈. 즉, 에러나면 롤백 필요)
 //읽기 -> @Transactional(readOnly = true) (조회는 데이터를 안바꿈. 롤백 기능 필요 없음)
@@ -143,6 +144,28 @@ public class PostService {
 
         //Post 엔티티 -> DTO
         return postPage.map(this::convertToResponseDto);
+    }
+
+    //게시글 검색 기능
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> searchPostsByKeyword(String keyword, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "postsId"));
+
+        //제목 또는 내용에 keyword가 포함된 게시글 조회
+        Page<Post> postPage = postRepository.findByTitleContainingOrContentContaining(keyword, keyword, pageable);
+
+        return postPage.map(post -> {
+            PostResponseDto dto = convertToResponseDto(post);
+
+            //하이라이팅 처리, ?!로 대소문자 무시하여 검색어 발견하면 감쌈
+            if (keyword != null && !keyword.isEmpty()) {
+                String regex = "(?i)(" + Pattern.quote(keyword) + ")";
+                String highlightedTitle = post.getTitle().replaceAll(regex, "<span class='highlight'>$1</span>");
+                dto.setTitle(highlightedTitle);
+            }
+
+            return dto;
+        });
     }
 
     // 카테고리, 태그, 상태로 검색
