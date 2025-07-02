@@ -25,9 +25,9 @@ replay_pid*
 
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+
+# maven wrapper whitelisted
+!/.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
 .apt_generated
@@ -55,7 +55,6 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -145,4 +144,9 @@ Temporary Items
 *.icloud
 
 application.properties
-application.yml
+
+# Ignore all env files
+.env
+.env.*
+
+!src/main/resources/application.yml

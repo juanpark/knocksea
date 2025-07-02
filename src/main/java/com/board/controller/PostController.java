@@ -1,10 +1,12 @@
 package com.board.controller;
 
+import com.board.domain.Post;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
 import com.board.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -72,9 +74,8 @@ public class PostController {
         return "redirect:/posts";
     }
 
-    //페이징 처리
-    @GetMapping
-    //defaultValue가 0이지만 첫번째 페이지부터
+    //페이징 조회 → URL 변경
+    @GetMapping("/page")
     public String getPostList(@RequestParam(defaultValue = "0") int page, Model model) {
         int pageSize = 10;
         Page<PostResponseDto> posts = postService.getPostsByPage(page, pageSize);
@@ -84,5 +85,25 @@ public class PostController {
         model.addAttribute("totalPages", posts.getTotalPages());
 
         return "post-list";
+    }
+
+    // 카테고리, 태그, 상태로 검색
+    @GetMapping
+    public ResponseEntity<List<Post>> getPosts(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long tagId,
+            @RequestParam(required = false) Post.Status status
+    ) {
+        return ResponseEntity.ok(postService.searchPosts(categoryId, tagId, status));
+    }
+
+    // 질문상태 업데이트
+    @PatchMapping("/{postId}/status")
+    public String updateStatus(
+            @PathVariable Long postId,
+            @RequestParam Post.Status status
+    ) {
+        postService.updateStatus(postId, status);
+        return "redirect:/post-detail";
     }
 }

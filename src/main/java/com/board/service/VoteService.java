@@ -1,5 +1,6 @@
 package com.board.service;
 
+import com.board.domain.Member;
 import com.board.entity.*;
 import com.board.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +17,9 @@ public class VoteService {
     /**
      * 투표 요청 처리 (추천 or 비추천)
      */
-    public void vote(User user, Long targetId, TargetType targetType, VoteType isLike) {
+    public void vote(Member member, Long targetId, TargetType targetType, VoteType voteType) {
         // 이미 투표한 적 있는지 확인
-        Optional<Vote> existingVote = voteRepository.findByUserAndTargetIdAndTargetType(user, targetId, targetType);
+        Optional<Vote> existingVote = voteRepository.findByMemberAndTargetIdAndTargetType(member, targetId, targetType);
 
         if (existingVote.isPresent()) {
             throw new IllegalArgumentException("이미 투표한 대상입니다.");
@@ -26,10 +27,10 @@ public class VoteService {
 
         // 투표 객체 저장
         Vote vote = Vote.builder()
-                .user(user)
+                .member(member)
                 .targetId(targetId)
                 .targetType(targetType)
-                .isLike(isLike)
+                .voteType(voteType)
                 .build();
 
         voteRepository.save(vote);
@@ -38,7 +39,7 @@ public class VoteService {
     /**
      * 추천/비추천 수 반환
      */
-    public long countVotes(Long targetId, TargetType targetType, VoteType isLike) {
-        return voteRepository.countByTargetIdAndTargetTypeAndIsLike(targetId, targetType, isLike);
+    public long countVotes(Long targetId, TargetType targetType, VoteType voteType) {
+        return voteRepository.countByTargetIdAndTargetTypeAndVoteType(targetId, targetType, voteType);
     }
 }
