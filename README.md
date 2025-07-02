@@ -100,12 +100,6 @@ git push origin feature/작업이름
 
 ## 📌 7. 머지 후 브랜치 삭제하기
 
-### main 최신화
-```bash
-git switch main
-git pull origin main
-```
-
 ### 로컬 브랜치 삭제
 ```bash
 git branch -d feature/작업이름
@@ -119,10 +113,10 @@ git push origin --delete feature/작업이름
 
 ⸻
 
-## 📌 8. 새로운 작업을 시작할 때 항상 main 최신화!
+## 📌 8. 새로운 작업을 시작할 때 항상 develop 최신화!
 
 ```bash
-git switch main
+git switch develop
 git pull origin main
 git switch -c feature/new-task
 ```
@@ -142,7 +136,7 @@ git switch -c feature/new-task
 | 원격 저장소 푸시 | `git push origin feature/작업이름` | GitHub 업로드 |
 | PR 생성 및 병합 | GitHub에서 PR 생성 후 Merge |
 | 브랜치 삭제 | `git branch -d`, `git push origin --delete` | 병합 완료 후 삭제 |
-| 새로운 작업 시작 전 최신화 | `git pull origin main` | 항상 최신 main 기준 |
+| 새로운 작업 시작 전 최신화 | `git pull origin develop` | 항상 최신 develop 기준 |
 
 
 ⸻
@@ -150,7 +144,7 @@ git switch -c feature/new-task
 # 🔥 Git 협업 시 주의할 점
 
 ✅ main 브랜치 직접 수정 금지  
-✅ 작업 전 항상 최신 main pull  
+✅ 작업 전 항상 최신 develop pull  
 ✅ 의미 있는 커밋 메시지 작성 (`[Feature]`, `[Fix]`, `[Chores]` 등)  
 ✅ 브랜치 → PR → Merge 순서로 협업  
 ✅ 병합 완료 후 브랜치 삭제
