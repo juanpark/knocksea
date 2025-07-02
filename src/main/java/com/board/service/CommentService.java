@@ -87,7 +87,7 @@ public class CommentService {
     public List<CommentResponse> getCommentsByUser(Long userId) {
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
-        List<Comment> comments = commentRepository.findByUser(member);
+        List<Comment> comments = commentRepository.findByMember(member);
         return comments.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

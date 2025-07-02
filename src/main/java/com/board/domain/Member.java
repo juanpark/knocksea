@@ -29,12 +29,12 @@ public class Member {
 
     private String platform;
 
-    //Post 엔티티의 user 필드가 주인 (외래 키를 가진 쪽이 주인)
+    //Post 엔티티의 member 필드가 주인 (외래 키를 가진 쪽이 주인)
     //게시글 저장,삭제 시 댓글도 저장,삭제 / 댓글 제거하면 DB에서도 삭제
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
-    //Comment 엔티티의 user 필드가 주인 (외래 키를 가진 쪽이 주인)
+    //Comment 엔티티의 member 필드가 주인 (외래 키를 가진 쪽이 주인)
     //게시글 저장,삭제 시 댓글도 저장,삭제 / 댓글 제거하면 DB에서도 삭제
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
