@@ -10,7 +10,7 @@ import com.board.dto.JwtTokenRequest;
 import com.board.dto.JwtTokenResponse;
 import com.board.dto.KakaoOauthResponse;
 import com.board.dto.KakaoProfile;
-import com.board.dto.LogoutResponse;
+import com.board.dto.MessageResponse;
 import com.board.dto.UserLogin;
 import com.board.dto.UserRegister;
 import com.board.repository.MemberRepository;
@@ -92,14 +92,15 @@ public class AuthService {
     return member.getEmail();
   }
 
+  // 로그아웃 시 RefreshToken 삭제
   @Transactional
-  public LogoutResponse removeRefreshToken(String email) {
+  public MessageResponse removeRefreshToken(String email) {
     log.info("[AuthService] removeRefreshToken email: {}", email);
     Member member = memberRepository.findByEmail(email)
         .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
     log.info("[AuthService] removeRefreshToken userId: {}", member.getId());
     tokenRepository.deleteByMemberId(member.getId());
-    return LogoutResponse.builder().message("로그아웃 완료").build();
+    return MessageResponse.builder().message("로그아웃 완료").build();
   }
 
   // AccessToken 재발급 (RefreshToken은 만료시 자동 로그아웃하여 다시 재로그인하도록 함)

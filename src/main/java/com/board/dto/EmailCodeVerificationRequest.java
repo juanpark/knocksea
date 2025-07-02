@@ -5,7 +5,9 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class CodeVerificationRequest {
+public class EmailCodeVerificationRequest {
+
   private String email;
   private String code;
+
 }

@@ -2,6 +2,7 @@ package com.board.controller;
 
 import com.board.auth.CustomUserDetails;
 import com.board.domain.Member;
+import com.board.dto.MemberResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,11 @@ public class MemberController {
   // AuthenticationPrincipal은 현재 Authorization 헤더로 넘어온 토큰에 저장된 member을 반환합니다
   // GET /users
   @GetMapping
-  public ResponseEntity<Member> findByMember(
+  public ResponseEntity<MemberResponse> findByMember(
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     Member member = userDetails.getMember();
-    return ResponseEntity.ok(member);
+
+    return ResponseEntity.ok(MemberResponse.builder().nickname(member.getNickname()).email(
+        member.getEmail()).name(member.getName()).build());
   }
 }
