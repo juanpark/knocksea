@@ -15,10 +15,6 @@ public class TagController {
 
     private final TagService tagService;
 
-    public TagController(TagService tagService) {
-        this.tagService = tagService;
-    }
-
     @GetMapping
     public List<Tag> getAll() {
         return tagService.findAll();

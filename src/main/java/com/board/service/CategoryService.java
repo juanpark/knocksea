@@ -12,10 +12,6 @@ import java.util.List;
 public class CategoryService {
     private final CategoryRepository categoryRepo;
 
-    public CategoryService(CategoryRepository categoryRepo) {
-        this.categoryRepo = categoryRepo;
-    }
-
     public List<Category> findAll() {
         return categoryRepo.findAll();
     }

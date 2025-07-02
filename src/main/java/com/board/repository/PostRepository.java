@@ -2,11 +2,12 @@ package com.board.repository;
 
 import com.board.domain.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface PostRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificationExecutor<Post> {
 
     //조회수 증가 쿼리
     @Modifying(clearAutomatically = true) //데이터 변경

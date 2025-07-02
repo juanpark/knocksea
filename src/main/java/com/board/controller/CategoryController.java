@@ -15,10 +15,6 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
-
     @GetMapping
     public List<Category> getAll() {
         return categoryService.findAll();

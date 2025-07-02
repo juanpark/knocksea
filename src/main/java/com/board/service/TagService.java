@@ -12,10 +12,6 @@ import java.util.List;
 public class TagService {
     private final TagRepository tagRepo;
 
-    public TagService(TagRepository tagRepo) {
-        this.tagRepo = tagRepo;
-    }
-
     public List<Tag> findAll() {
         return tagRepo.findAll();
     }
