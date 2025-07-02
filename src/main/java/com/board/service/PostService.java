@@ -3,7 +3,9 @@ package com.board.service;
 import com.board.domain.Post;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
+import com.board.repository.CategoryRepository;
 import com.board.repository.PostRepository;
+import com.board.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +26,8 @@ import java.util.List;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final CategoryRepository categoryRepo;
+    private final TagRepository tagRepo;
 
     //게시글 저장
     @Transactional
@@ -33,6 +37,16 @@ public class PostService {
         Post post = new Post();
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
+
+        if (dto.getCategoryIds() != null) {
+            List<Category> categories = categoryRepo.findAllById(dto.getCategoryIds());
+            post.getCategories().addAll(categories);
+        }
+
+        if (dto.getTagIds() != null) {
+            List<Tag> tags = tagRepo.findAllById(dto.getTagIds());
+            post.getTags().addAll(tags);
+        }
 
         Post savedPost = postRepository.save(post);
         return savedPost.getPostsId();
@@ -125,6 +139,37 @@ public class PostService {
 
         //Post 엔티티 -> DTO
         return postPage.map(this::convertToResponseDto);
+    }
+
+    // 카테고리, 태그, 상태로 검색
+    public List<Post> searchPosts(Long categoryId, Long tagId, Post.Status status) {
+        return postRepo.findAll((root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            if (categoryId != null) {
+                Join<Post, Category> catJoin = root.join("categories");
+                predicates.add(cb.equal(catJoin.get("id"), categoryId));
+            }
+
+            if (tagId != null) {
+                Join<Post, Tag> tagJoin = root.join("tags");
+                predicates.add(cb.equal(tagJoin.get("id"), tagId));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        });
+    }
+
+    // 질문상태 업데이트
+    public void updateStatus(Long postId, Post.Status status) {
+        Post post = postRepo.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        post.setStatus(status);
+        postRepo.save(post);
     }
 
 }
