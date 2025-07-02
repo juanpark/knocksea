@@ -98,7 +98,7 @@
             margin-top: 8px;
         }
         .pagination {
-            margin-top: 20px;
+            margin-top: 50px;
             text-align: center;
         }
         .pagination a {
@@ -128,6 +128,12 @@
             background-color: yellow;
             font-weight: bold;
         }
+        .no-posts {
+            text-align: center;
+            font-size: 18px;
+            color: #777;
+            margin-top: 50px;
+        }
     </style>
 </head>
 <body>
@@ -140,10 +146,10 @@
     <h1>게시글 목록</h1>
 
     <div class="top-bar">
-        <a href="/posts/create" class="create-button">+ 게시글 작성</a>
+        <a href="/posts/create" class="create-button">게시글 작성</a>
 
         <form method="get" action="/posts/page" class="search-form">
-            <input type="text" name="keyword" placeholder="검색어를 입력하세요" th:value="${keyword}">
+            <input type="text" name="keyword" placeholder="검색어를 입력하세요" th:value="${keyword} ?: ''">
             <button type="submit">검색</button>
 
             <select name="sort" onchange="this.form.submit()">
@@ -151,6 +157,10 @@
                 <option value="views" th:selected="${sort == 'views'}">조회수순</option>
             </select>
         </form>
+    </div>
+
+    <div th:if="${posts.size() == 0}" class="no-posts">
+        게시글이 없습니다.
     </div>
 
     <div th:each="post : ${posts}" class="post-card">
@@ -163,21 +173,21 @@
     </div>
 
     <div class="pagination">
-        <a th:if="${currentPage > 0}"
-           th:href="@{'/posts/page?page=' + ${currentPage - 1} + '&keyword=' + ${keyword} + '&sort=' + ${sort}}">이전</a>
+        <a th:if="${currentPage > 1}"
+           th:href="@{'/posts/page?page=' + (${currentPage} - 2) + '&keyword=' + ${keyword} + '&sort=' + ${sort}}">이전</a>
 
-        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+        <span th:each="i : ${#numbers.sequence(1, totalPages)}">
             <a th:if="${i != currentPage}"
-               th:href="@{'/posts/page?page=' + ${i} + '&keyword=' + ${keyword} + '&sort=' + ${sort}}"
-               th:text="${i + 1}"></a>
+               th:href="@{'/posts/page?page=' + (${i} - 1) + '&keyword=' + ${keyword} + '&sort=' + ${sort}}"
+               th:text="${i}"></a>
 
             <span th:if="${i == currentPage}"
-                  th:text="${i + 1}"
+                  th:text="${i}"
                   class="current-page"></span>
         </span>
 
-        <a th:if="${currentPage + 1 < totalPages}"
-           th:href="@{'/posts/page?page=' + ${currentPage + 1} + '&keyword=' + ${keyword} + '&sort=' + ${sort}}">다음</a>
+        <a th:if="${currentPage < totalPages}"
+           th:href="@{'/posts/page?page=' + (${currentPage}) + '&keyword=' + ${keyword} + '&sort=' + ${sort}}">다음</a>
     </div>
 
 </div>

@@ -81,6 +81,10 @@ public class PostController {
                               @RequestParam(defaultValue = "recent") String sort,
                               Model model)
     {
+        if (page < 0) {
+            page = 0;
+        }
+
         int pageSize = 10;
         Page<PostResponseDto> posts;
 
@@ -91,9 +95,14 @@ public class PostController {
             posts = postService.getPostsByPage(page, pageSize, sort);
         }
 
+        int totalPages = posts.getTotalPages();
+        if (totalPages == 0) {
+            totalPages = 1; //1페이지부터 보장
+        }
+
         model.addAttribute("posts", posts.getContent()); //현재 페이지 글 목록
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", posts.getTotalPages());
+        model.addAttribute("currentPage", page + 1);
+        model.addAttribute("totalPages", totalPages);
         model.addAttribute("keyword", keyword); //검색어
         model.addAttribute("sort", sort); //정렬
 
