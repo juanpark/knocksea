@@ -1,11 +1,12 @@
-package com.board.auth.contorller;
+package com.board.controller;
 
 import com.board.auth.service.AuthService;
 import com.board.auth.CustomUserDetails;
+import com.board.dto.EmailCodeVerificationRequest;
 import com.board.dto.EmailVerificationRequest;
 import com.board.dto.JwtTokenRequest;
 import com.board.dto.JwtTokenResponse;
-import com.board.dto.LogoutResponse;
+import com.board.dto.MessageResponse;
 import com.board.dto.UserLogin;
 import com.board.dto.UserRegister;
 import com.board.service.MailService;
@@ -36,24 +37,57 @@ public class AuthController {
   // 닉네임 중복 확인
   @GetMapping("/check-nickname")
   @ResponseBody
-  public ResponseEntity<Boolean> checkNickname(@RequestParam String nickname){
+  public ResponseEntity<Boolean> checkNickname(@RequestParam String nickname) {
     return new ResponseEntity<>(!memberService.checkNickname(nickname), HttpStatus.OK);
   }
 
   // 이메일 인증 코드 요청 (중복이메일 검증 후 인증코드 전송)
   @PostMapping("/email-verification")
   @ResponseBody
-  public ResponseEntity<String> sendVerification(@RequestBody EmailVerificationRequest emailVerificationRequest){
-    try{
-      if(memberService.findByEmail(emailVerificationRequest.getEmail()) != null){
-        return new ResponseEntity<>("이미 존재하는 이메일입니다.", HttpStatus.BAD_REQUEST);
-      }else{
-        mailService.sendVerificationCode(emailVerificationRequest.getEmail());
-        return new ResponseEntity<>("이메일을 전송했습니다. 확인해주세요.", HttpStatus.OK);
+  public ResponseEntity<MessageResponse> sendVerification(
+      @RequestBody EmailVerificationRequest emailVerificationRequest) {
+    MessageResponse emailResponse;
+    try {
+      if (memberService.findByEmail(emailVerificationRequest.getEmail()) != null) {
+        emailResponse = MessageResponse.builder().message("중복된 이메일입니다.").build();
+        return new ResponseEntity<>(emailResponse, HttpStatus.BAD_REQUEST);
+      } else {
+        emailResponse = mailService.sendVerificationCode(emailVerificationRequest.getEmail());
+        return new ResponseEntity<>(emailResponse, HttpStatus.OK);
       }
-    }catch(Exception e){
-      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+      emailResponse = MessageResponse.builder().message(e.getMessage()).build();
+      return new ResponseEntity<>(emailResponse, HttpStatus.BAD_REQUEST);
     }
+  }
+
+  // 인증코드 검증
+  @PostMapping("/email-verification/verify")
+  @ResponseBody
+  public ResponseEntity<MessageResponse> codeVerification(
+      @RequestBody EmailCodeVerificationRequest emailCodeVerificationRequest) {
+    MessageResponse emailResponse;
+    try {
+      if (mailService.codeVerification(emailCodeVerificationRequest.getEmail(),
+          emailCodeVerificationRequest.getCode())) {
+        emailResponse = MessageResponse.builder().message("이메일 인증 성공").build();
+        return new ResponseEntity<>(emailResponse,HttpStatus.OK);
+      } else {
+        emailResponse = MessageResponse.builder().message("이메일 인증 실패").build();
+        return new ResponseEntity<>(emailResponse, HttpStatus.OK);
+      }
+    } catch (Exception e) {
+      emailResponse = MessageResponse.builder().message(e.getMessage()).build();
+      return new ResponseEntity<>(emailResponse, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  // 인증코드 만료
+  @PostMapping("/email-verification/expire")
+  @ResponseBody
+  public ResponseEntity<String> expireCode(@RequestBody EmailVerificationRequest emailVerificationRequest) {
+    mailService.expireCode( emailVerificationRequest.getEmail());
+    return ResponseEntity.ok("인증 코드가 만료되었습니다.");
   }
 
   // 자체 로그인
@@ -78,6 +112,7 @@ public class AuthController {
   @ResponseBody
   public ResponseEntity<String> localRegister(@RequestBody UserRegister userRegister) {
     try {
+      log.info("localRegister userRegister: {}", userRegister.toString());
       String email = authService.register(userRegister);
       return new ResponseEntity<>(email, HttpStatus.CREATED);
     } catch (IllegalArgumentException e) {
@@ -89,15 +124,15 @@ public class AuthController {
   // POST /logout
   @PostMapping("/logout")
   @ResponseBody
-  public ResponseEntity<LogoutResponse> localLogout(
+  public ResponseEntity<MessageResponse> localLogout(
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     if (userDetails == null) {
-      LogoutResponse response = LogoutResponse.builder().message("잘못된 토큰 형식입니다.").build();
+      MessageResponse response = MessageResponse.builder().message("잘못된 토큰 형식입니다.").build();
       return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     String email = userDetails.getUsername();
-    LogoutResponse response = authService.removeRefreshToken(email);
+    MessageResponse response = authService.removeRefreshToken(email);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
