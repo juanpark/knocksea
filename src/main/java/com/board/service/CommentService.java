@@ -49,20 +49,33 @@ public class CommentService {
     }
 
     // 댓글 수정
-    public void updateComment(Long commentId, CommentUpdateRequest request) {
+    public void updateComment(Long commentId, CommentUpdateRequest request, Long currentUserId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+
+        // 로그인한 사용자와 댓글 작성자가 일치하는지 확인
+        if (!comment.getMember().getId().equals(currentUserId)) {
+            throw new SecurityException("해당 댓글을 수정할 권한이 없습니다.");
+        }
+
         comment.setContent(request.getContent());
         comment.setUpdatedAt(java.time.LocalDateTime.now());
     }
 
+
     // 댓글 삭제
-    public void deleteComment(Long commentId) {
-        if (!commentRepository.existsById(commentId)) {
-            throw new IllegalArgumentException("댓글이 존재하지 않습니다.");
+    public void deleteComment(Long commentId, Long currentUserId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+
+        // 로그인한 사용자와 댓글 작성자가 일치하는지 확인
+        if (!comment.getMember().getId().equals(currentUserId)) {
+            throw new SecurityException("해당 댓글을 삭제할 권한이 없습니다.");
         }
-        commentRepository.deleteById(commentId);
+
+        commentRepository.delete(comment);
     }
+
 
     // 댓글 채택
     public void adoptComment(Long commentId) {
