@@ -4,6 +4,7 @@ import com.board.dto.CommentCreateRequest;
 import com.board.dto.CommentResponse;
 import com.board.dto.CommentUpdateRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,25 +16,25 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
 @SpringBootTest
 @AutoConfigureMockMvc
 public class CommentControllerTest {
+
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
 
+    private Long testPostId;
     private Long testCommentId;
 
-    // 테스트용 댓글 생성 유틸 메서드
-    // 댓글을 생성하고 해당 댓글의 ID를 반환
-    private Long createTestComment() throws Exception {
+    // 댓글 생성 유틸 메서드
+    private Long createTestComment(Long postId, Long memberId, String content) throws Exception {
         CommentCreateRequest request = new CommentCreateRequest();
-        request.setPostId(3L);
-        request.setUserId(3L);
-        request.setContent("공통 댓글 생성");
+        request.setPostId(postId);
+        request.setUserId(memberId);
+        request.setContent(content);
 
         String response = mockMvc.perform(post("/api/comments")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -47,58 +48,75 @@ public class CommentControllerTest {
         return commentResponse.getCommentId();
     }
 
+    // 테스트 전: 공통 댓글 생성
     @BeforeEach
     void setup() throws Exception {
-        testCommentId = createTestComment();
+        testPostId = 3L; // 이미 존재하는 게시글 ID로 가정
+        testCommentId = createTestComment(testPostId, 3L, "테스트용 댓글");
+    }
+
+    // 테스트 후: 댓글 정리
+    @AfterEach
+    void cleanup() throws Exception {
+        mockMvc.perform(delete("/api/comments/{id}", testCommentId))
+                .andExpect(status().isOk());
     }
 
     // 댓글 등록 테스트
     @Test
     void commentInsertSuccess() throws Exception {
         CommentCreateRequest request = new CommentCreateRequest();
-        request.setPostId(1L); // 미리 DB에 게시글 등록되어있어야 함
+        request.setPostId(testPostId);
         request.setUserId(3L);
-        request.setContent("진짜 유용한 글! 인정입니닷");
+        request.setContent("유용한 글입니다!");
 
-        // when & then
         mockMvc.perform(post("/api/comments")
-                .contentType(MediaType.APPLICATION_JSON) // 요청 본문의 타입 지정
-                .content(objectMapper.writeValueAsString(request))) // ObjectMapper는 JSON 직렬화/역직렬화 도구
-                .andExpect(status().isCreated()); // 201  반환
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
     }
-    
+
     // 댓글 조회 테스트
     @Test
     void getTopLevelCommentsByPost() throws Exception {
-        // given (게시글 ID에 댓글이 존재하는 경우)
-        Long postId = 1L; // 사전 등록된 게시글 ID
-
-        // when & then
-        mockMvc.perform(get("/api/comments/post/{postId}/top", postId))
+        mockMvc.perform(get("/api/comments/post/{postId}", testPostId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray()) // 결과가 배열인지
-                .andExpect(jsonPath("$[0].commentId").exists()) // 첫 댓글에 ID 있는지
-                .andExpect(jsonPath("$[0].content").isNotEmpty()); // 내용이 비어있지 않은지
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].commentId").exists())
+                .andExpect(jsonPath("$[0].content").isNotEmpty());
     }
 
+    // 댓글 없는 게시글 조회
+    @Test
+    void getTopLevelCommentsByPost_NoComments() throws Exception {
+        Long emptyPostId = 999L; // 댓글 없는 게시글 ID라고 가정
+
+        mockMvc.perform(get("/api/comments/post/{postId}", emptyPostId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
 
     // 댓글 수정 테스트
     @Test
     void commentUpdateSuccess() throws Exception {
-        CommentUpdateRequest request = new CommentUpdateRequest();
-        request.setContent("수정된 댓글 내용입니다.");
+        CommentUpdateRequest updateRequest = new CommentUpdateRequest();
+        updateRequest.setContent("수정된 댓글입니다.");
 
         mockMvc.perform(patch("/api/comments/{id}", testCommentId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk());
     }
 
     // 댓글 삭제 테스트
     @Test
     void commentDeleteSuccess() throws Exception {
-        mockMvc.perform(delete("/api/comments/{id}", testCommentId))
+        Long deleteId = createTestComment(testPostId, 3L, "삭제용 댓글");
+
+        mockMvc.perform(delete("/api/comments/{id}", deleteId))
                 .andExpect(status().isOk());
     }
 }
