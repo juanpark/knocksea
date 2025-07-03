@@ -1,12 +1,13 @@
 CREATE DATABASE IF NOT EXISTS knocksea;
 USE knocksea;
 
+
 -- 사용자 테이블
 CREATE TABLE users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
-    nickname VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    nickname VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL,
     password VARCHAR(255),
     platform_id VARCHAR(255),
     platform VARCHAR(255) NOT NULL DEFAULT 'LOCAL'
@@ -16,11 +17,12 @@ CREATE TABLE users (
 CREATE TABLE tokens (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    refreshToken VARCHAR(512) NOT NULL UNIQUE,
+    refresh_token VARCHAR(512) NOT NULL UNIQUE,
     issued_at DATETIME NOT NULL,
-    expire_at DATETIME NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    expired_at DATETIME NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
 
 -- 게시글 테이블
 CREATE TABLE posts (
@@ -111,14 +113,5 @@ CREATE TABLE fishing_spot (
     update_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- 추천/비추천
-CREATE TABLE vote (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    question_id BIGINT NOT NULL,
-    is_upvote BOOLEAN NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (question_id) REFERENCES question(id)
-);
+ALTER TABLE posts
+ADD COLUMN view_count INT NOT NULL DEFAULT 0;
