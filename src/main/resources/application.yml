@@ -6,6 +6,10 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: ${DB_DRIVER_CLASS_NAME}
+  data:
+    mongodb: # 낚시터 데이터 DB
+      uri: ${MONGODB_URI}
+      # uri: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_DATABASE}?authSource=admin
   jpa:
     hibernate:
       ddl-auto: update
@@ -44,4 +48,5 @@ kakao:
   client-id: ${KAKAO_CLIENT_ID}
   redirect-uri: ${KAKAO_REDIRECT_URI}
 
-
+google:
+  secret: ${GOOGLE_MAP_KEY}
