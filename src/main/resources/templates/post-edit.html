@@ -120,7 +120,7 @@
       .then(response => {
           if (response.ok) {
               alert('글 수정 성공!');
-              window.location.href = '/posts/' + postId;
+              window.location.href = '/posts/' + postId + '?from=edit';
           } else {
               alert('글 수정 실패!');
           }

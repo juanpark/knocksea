@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -52,6 +51,14 @@ public class PostController {
         return "redirect:/posts/page";
     }
 
+    //조회수 증가
+    @PostMapping("/{id}/viewCount")
+    @ResponseBody
+    public ResponseEntity<Void> increaseViewCount(@PathVariable Long id) {
+        postService.increaseViewCount(id);
+        return ResponseEntity.ok().build();
+    }
+
     //게시글 상세 페이지
     @GetMapping("/{id}")
     public String getPost(@PathVariable Long id, Model model) {
@@ -75,10 +82,9 @@ public class PostController {
                              @RequestBody PostRequestDto requestDto)
 
     {
-
         Long userId = getCurrentUserId();
         postService.updatePost(id, requestDto, userId);
-        return "redirect:/posts/" + id; //수정 후 상세 페이지로 리다이렉트
+        return "redirect:/posts/" + id + "?from=edit"; //수정 후 상세 페이지로 리다이렉트
     }
 
     //게시글 삭제 처리
