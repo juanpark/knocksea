@@ -7,46 +7,203 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>로그인 테스트</title>
 </head>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #f4f6f8;
+  }
+  .navbar {
+    background-color: #2196F3;
+    padding: 15px 30px;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  .container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    /*max-width: 800px;*/
+    min-height: calc(100vh - 60px);
+    padding: 0 20px;
+  }
+  .logo-container{
+    max-width: 600px;
+    min-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 48px;
+  }
+  p{
+    margin: 0;
+    font-size: 3rem;
+  }
+  .login-container{
+    margin: 0 auto;
+    width: 600px;
+  }
+  #login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .form-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-group label {
+    width: 100px;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .input-button-wrapper {
+    display: flex;
+    flex: 1;
+    gap: 10px;
+  }
+  .input-button-wrapper input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  input[readonly] {
+    pointer-events: none !important;
+    background-color: #f0f0f0 !important;
+    color: #555 !important;
+    cursor: not-allowed !important;
+  }
+
+  .input-button-wrapper button {
+    min-width: 112px;
+    padding: 8px 12px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    color: white;
+    height: 38px;
+  }
+
+  .form-group button:hover {
+    background-color: #0056b3;
+  }
+
+  .form-group button:disabled{
+    background-color: #555555;
+  }
+  #login-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 300px;
+  }
+  #login-button:hover {
+    background-color: #0056b3;
+  }
+  #kakao-login-btn {
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+    background: transparent;
+    padding: 0;
+    height: 44px; /* 로그인 버튼과 동일한 높이 */
+    border-radius: 8px;
+    overflow: hidden;
+    width: 300px;
+  }
+
+  .login-group{
+    display: flex;
+    flex:1;
+    gap:10px;
+  }
+
+  .register-container{
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    padding-top: 12px;
+  }
+  .register-button{
+    font-size: 16px;
+    color: #777777;
+  }
+
+  .register-button:hover{
+    font-weight:bolder;
+    text-decoration: underline;
+  }
+
+
+</style>
 <body>
-<h1>회원가입 화면으로 이동</h1>
-<button id="register-button">Register</button>
-<h1>이메일 로그인</h1>
 
-<form th:action="@{/login}" method="post">
-  <div>
-    <label for="email">이메일:</label>
-    <input type="email" id="email" name="email" required/>
+<div class="navbar">
+  knocksea
+</div>
+<div class="container">
+  <div class="logo-container">
+    <div class="logo">
+      <p>KnockSea</p>
+    </div>
   </div>
-  <div>
-    <label for="password">비밀번호:</label>
-    <input type="password" id="password" name="password" required/>
+  <div class="login-container">
+    <form id="login-form" th:action="@{/login}" method="post">
+      <div class="form-group">
+        <label for="email">이메일 </label>
+        <div class="input-button-wrapper">
+          <input type="text" id="email" name="email" required/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="password">비밀번호 </label>
+        <div class="input-button-wrapper">
+          <input type="password" id="password" name="password" required/>
+        </div>
+      </div>
+      <div class="login-group">
+        <button type="submit" id="login-button">로그인</button>
+        <button id="kakao-login-btn">
+          <img src="/images/kakao_login_medium_wide.png" alt="카카오 로그인">
+        </button>
+      </div>
+    </form>
+    <div class="register-container">
+      <p class="register-button">회원가입</p>
+    </div>
   </div>
-  <div>
-    <button type="submit">로그인</button>
-  </div>
-</form>
-<h1>카카오 로그인</h1>
-<button id="kakao-login-btn">
-  <img src="/images/kakao_login_large_wide.png" alt="카카오 로그인">
-</button>
+</div>
+
 <script th:inline="javascript">
-  document.addEventListener("DOMContentLoaded", () => {
-    const kakaoBtn = document.getElementById("kakao-login-btn");
-    const registerBtn = document.getElementById("register-button");
+  const kakaoBtn = document.getElementById("kakao-login-btn"); //카카오로그인버튼
+  const registerBtn = document.getElementById("register-button"); //회원가입화면이동버튼
 
-    kakaoBtn.addEventListener("click", handleKakaoLogin);
-    registerBtn.addEventListener("click",handleRegister);
-  });
-
-
-  function handleKakaoLogin() {
+  // 카카오 로그인 요청
+  kakaoBtn.addEventListener("click",async() => {
     const kakaoAuthUrl = /*[[${location}]]*/ "https://kauth.kakao.com/oauth/authorize?client_id=...";
     window.location.href = kakaoAuthUrl;
-  }
+  })
 
-  function handleRegister(){
+  // 회원가입 화면 이동
+  registerBtn.addEventListener("click", async() => {
     window.location.href="register";
-  }
+  })
 </script>
 </body>
 </html>
