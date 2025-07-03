@@ -18,9 +18,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -67,12 +67,15 @@ public class PostService {
         return savedPost.getPostsId();
     }
 
-    //게시글 조회
-    @Transactional
-    public PostResponseDto getPost(Long id) {
-        //조회수 증가
+    //조회수 증가 (getPost에서 로직 분리)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void  increaseViewCount(Long id) {
         postRepository.increaseViewCount(id);
+    }
 
+    //게시글 조회
+    @Transactional(readOnly = true)
+    public PostResponseDto getPost(Long id) {
         //글이 삭제된 상태에서 조회 요청 보낼 수 있고, URL에서 직접 요청하는 경우도 있으므로 예외처리
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
