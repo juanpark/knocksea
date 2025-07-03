@@ -196,8 +196,7 @@
 
   // 카카오 로그인 요청
   kakaoBtn.addEventListener("click",async() => {
-    const kakaoAuthUrl = /*[[${location}]]*/ "https://kauth.kakao.com/oauth/authorize?client_id=...";
-    window.location.href = kakaoAuthUrl;
+    window.location.href = "connect-kakao";
   })
 
   // 회원가입 화면 이동
