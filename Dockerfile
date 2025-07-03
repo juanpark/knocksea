@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Copy the built JAR file into the container
 # The JAR name must match the output of your Maven build
-COPY target/knocksea-0.0.1-SNAPSHOT.jar app.jar
+COPY target/Knocksea-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose port if you’re running locally or directly in AWS EC2 (e.g., 8080)
 EXPOSE 8080
