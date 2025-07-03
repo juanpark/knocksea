@@ -14,23 +14,20 @@ public class FishingSpot {
   @Field("낚시터명")
   private String name;
 
+  @Field("낚시터유형")
+  private String spotType;
+
+  @Field("주소")
+  private String address;
+
   @Field("WGS84위도")
   private double latitude;
 
   @Field("WGS84경도")
   private double longitude;
 
-  @Field("소재지도로명주소")
-  private String address;
-
-  @Field("시/도")
-  private String city;
-
-  @Field("구")
-  private String gu;
-
-  @Field("동")
-  private String dong;
+  @Field("전화번호")
+  private String phone;
 
   @Field("주요어종")
   private String fishType;
@@ -40,4 +37,10 @@ public class FishingSpot {
 
   @Field("데이터기준일자")
   private String updatedAt;
+
+  @Field("시/도")
+  private String city;
+
+  @Field("시군구(전체)")
+  private String sigungu;
 }
