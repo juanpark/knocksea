@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -21,7 +22,10 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<CommentResponse> createComment(@RequestBody CommentCreateRequest request) {
         CommentResponse response = commentService.createComment(request);
-        return ResponseEntity.ok(response);
+
+        URI location = URI.create("/comments/" + response.getCommentId());
+        return ResponseEntity.created(location) // 201 Created + Location 헤더
+                                                .body(response); // 응답 본문 : CommentResponse json 객체
     }
 
     // 댓글 수정
