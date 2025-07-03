@@ -1,11 +1,13 @@
 package com.board.service;
 
 import com.board.domain.Category;
+import com.board.domain.Member;
 import com.board.domain.Post;
 import com.board.domain.Tag;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
 import com.board.repository.CategoryRepository;
+import com.board.repository.MemberRepository;
 import com.board.repository.PostRepository;
 import com.board.repository.TagRepository;
 import jakarta.persistence.criteria.Join;
@@ -18,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -33,10 +36,11 @@ public class PostService {
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepo;
     private final TagRepository tagRepo;
+    private final MemberRepository memberRepository;
 
     //게시글 저장
     @Transactional
-    public Long createPost(PostRequestDto requestDto) {
+    public Long createPost(PostRequestDto requestDto, Long currentUserId) {
         validateRequest(requestDto);
 
         Post post = new Post();
@@ -52,6 +56,12 @@ public class PostService {
             List<Tag> tags = tagRepo.findAllById(requestDto.getTagIds());
             post.getTags().addAll(tags);
         }
+
+        //유저 검증
+        Member member = memberRepository.findById(currentUserId)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        post.setMember(member); //작성자 저장
 
         Post savedPost = postRepository.save(post);
         return savedPost.getPostsId();
@@ -86,11 +96,16 @@ public class PostService {
 
     //게시글 수정
     @Transactional
-    public PostResponseDto updatePost(Long id, PostRequestDto requestDto) {
+    public PostResponseDto updatePost(Long id, PostRequestDto requestDto, Long currentUserId) {
         validateRequest(requestDto);
 
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다!"));
+
+        //유저 검증
+        if (!post.getMember().getId().equals(currentUserId)) {
+            throw new RuntimeException("작성자만 수정할 수 있습니다.");
+        }
 
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
@@ -100,9 +115,14 @@ public class PostService {
 
     //게시글 삭제
     @Transactional
-    public void deletePost(Long id) {
+    public void deletePost(Long id, Long currentUserId) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다!"));
+
+        //유저 검증
+        if (!post.getMember().getId().equals(currentUserId)) {
+            throw new RuntimeException("작성자만 삭제할 수 있습니다.");
+        }
 
         //해당 id에 대한 글에 대한 정보 모든 것을 삭제
         postRepository.delete(post);

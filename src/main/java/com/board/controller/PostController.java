@@ -1,5 +1,6 @@
 package com.board.controller;
 
+import com.board.auth.CustomUserDetails;
 import com.board.domain.Post;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
@@ -7,6 +8,11 @@ import com.board.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -37,9 +43,12 @@ public class PostController {
 
     //게시글 작성 처리
     @PostMapping("/create")
-    //form에서 받은 내용을 받아 service.createPost 메서드 실행
-    public String createPost(@ModelAttribute PostRequestDto requestDto) {
-        postService.createPost(requestDto);
+    //form에서 받은 내용을 받아 service.createPost 메서드 실행, 현재 로그인 유저 추출
+    public String createPost(@RequestBody PostRequestDto requestDto)
+    {
+
+        Long userId = getCurrentUserId();
+        postService.createPost(requestDto, userId);
         return "redirect:/posts/page";
     }
 
@@ -62,16 +71,23 @@ public class PostController {
 
     //게시글 수정 페이지(POST)
     @PostMapping("/{id}/edit")
-    public String updatePost(@PathVariable Long id, @ModelAttribute PostRequestDto requestDto) {
-        postService.updatePost(id, requestDto);
+    public String updatePost(@PathVariable Long id,
+                             @RequestBody PostRequestDto requestDto)
+
+    {
+
+        Long userId = getCurrentUserId();
+        postService.updatePost(id, requestDto, userId);
         return "redirect:/posts/" + id; //수정 후 상세 페이지로 리다이렉트
     }
 
     //게시글 삭제 처리
     @PostMapping("/{id}/delete")
-    public String deletePost(@PathVariable Long id) {
-        postService.deletePost(id);
-        return "redirect:/posts/page";
+    @ResponseBody
+    public ResponseEntity<String> deletePost(@PathVariable Long id) {
+        Long userId = getCurrentUserId();
+        postService.deletePost(id, userId);
+        return ResponseEntity.ok("삭제 성공");
     }
 
     //페이징 조회 → URL 변경, 검색어 기능 추가, 정렬 기능 추가
@@ -107,6 +123,35 @@ public class PostController {
         model.addAttribute("sort", sort); //정렬
 
         return "post-list";
+    }
+
+    //유저 ID 추출
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new RuntimeException("로그인이 필요합니다.");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        //JWT: CustomUserDetails를 저장한 경우
+        if (principal instanceof UserDetails userDetails) {
+            CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+            return customUserDetails.getMember().getId();
+        }
+
+        //OAuth: OAuth2User 타입인 경우
+        if (principal instanceof OAuth2User oauth2User) {
+            Object id = oauth2User.getAttribute("id");
+            if (id != null) {
+                return Long.parseLong(id.toString());
+            } else {
+                throw new RuntimeException("OAuth 유저 ID를 찾을 수 없습니다.");
+            }
+        }
+
+        throw new RuntimeException("로그인이 필요합니다.");
     }
 
     // 카테고리, 태그, 상태로 검색
