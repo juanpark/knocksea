@@ -4,9 +4,54 @@
   <meta charset="UTF-8">
   <title>낚시터 지도</title>
   <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background-color: #f4f6f8;
+    }
+    .navbar {
+      background-color: #2196F3;
+      padding: 15px 30px;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+    }
     #map {
+      background-color: aliceblue;
       width: 100%;
-      height: 600px;
+      height: calc(100vh - 60px);
+    }
+    .side-panel {
+      position: absolute;
+      left: 0;
+      top: 60px;
+      width: 500px;
+      height: calc(100vh - 60px);
+      background-color: #ffffff;
+      border-right: 1px solid #ddd;
+      overflow-y: auto;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      /*display: none; 처음엔 안보이게 */
+    }
+
+    .info{
+      padding: 16px;
+    }
+    .spot-image{
+      width: 100%;
+      height: 300px;
+      background-color: #007bff;
+    }
+    .spot-column{
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+    }
+    .spot-row{
+      display: flex;
+      width: 100%;
+      justify-content: flex-start;
+      gap: 10px;
     }
   </style>
   <!-- ✅ Google Maps API 키 필요 -->
@@ -15,41 +60,110 @@
   </script>
 </head>
 <body>
-<h2>전국 낚시터 지도</h2>
+<div class="navbar">
+  knocksea
+</div>
+
+<!--플로팅 사이드 패널-->
+<div class="side-panel" id="infoPanel">
+  <div class="spot-image" id="spotImage">
+    <img src="">
+  </div>
+  <div class="info">
+
+    <!--spot 이름, 카테고리 블록-->
+    <div class="spot-column">
+      <div class="spot-row">
+        <span id="spot-name">000 낚시터</span>
+        <div id="spot-category">
+          <span id="category">바다</span>
+        </div>
+      </div>
+    </div>
+
+    <!--spot 주소 주요어종 블록-->
+    <div class="spot-column">
+      <div class="spot-row">
+        <div class="spot-icon-row">
+          <span class="icon">📍</span>
+          <span id="spot-address">서울특별시 ○○구 ○○동</span>
+        </div>
+        <div class="spot-icon-row">
+          <span class="icon">🎣</span>
+          <span>붕어, 송어</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="spot-column">
+      <div class="spot-row">
+        <div class="spot-icon-row">
+          <span class="icon">📞</span>
+          <span>010-0000-0000</span>
+        </div>
+        <div class="spot-icon-row">
+          <span class="icon">💰</span>
+          <span>금액금액금액</span>
+        </div>
+      </div>
+    </div>
+    <div class="spot-column">
+      <div class="spot-updated">데이터 수집일 : 2025. 06. 27 13:00</div>
+    </div>
+  </div>
+</div>
+
+
 <div id="map"></div>
 
 <script>
-  let map;
-
-  function initMap() {
-    map = new google.maps.Map(document.getElementById("map"), {
-      center: { lat: 36.5, lng: 127.5 }, // 전국 중심
-      zoom: 7,
-    });
-
-    // 📌 낚시터 API에서 마커 정보 가져오기
-    fetch('/map/fishing-spots')
-    .then(res => res.json())
-    .then(data => {
-      data.forEach(spot => {
-        if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
-          const pos = {lat:spot.latitude, lng:spot.longitude};
-
-          const marker = new google.maps.Marker({
-            position: pos,
-            map: map,
-            title: spot.name,
-            icon: {
-              url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png", // 🔴 빨간 마커 아이콘
-            }
-          });
-        }
-      });
-    })
-    .catch(err => {
-      console.error("마커 로딩 실패:", err);
-    });
-  }
+  // let map;
+  //
+  // function initMap() {
+  //   map = new google.maps.Map(document.getElementById("map"), {
+  //     center: { lat: 36.5, lng: 127.5 }, // 전국 중심
+  //     zoom: 7,
+  //   });
+  //
+  //   // 📌 낚시터 API에서 마커 정보 가져오기
+  //   fetch('/map/fishing-spots')
+  //   .then(res => res.json())
+  //   .then(data => {
+  //     data.forEach(spot => {
+  //       if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
+  //         const pos = {lat:spot.latitude, lng:spot.longitude};
+  //
+  //         const marker = new google.maps.Marker({
+  //           position: pos,
+  //           map: map,
+  //           title: spot.name,
+  //           icon: {
+  //             url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png", // 🔴 빨간 마커 아이콘
+  //           }
+  //         });
+  //
+  //         marker.addListener("click", () => {
+  //           showInfoPanel(spot);
+  //         });
+  //
+  //       }
+  //     });
+  //   })
+  //   .catch(err => {
+  //     console.error("마커 로딩 실패:", err);
+  //   });
+  // }
+  //
+  // function showInfoPanel(spot) {
+  //   document.getElementById("infoPanel").style.display = "block";
+  //   document.getElementById("spotName").innerText = spot.name || "이름 없음";
+  //   document.getElementById("spotAddress").innerText = `주소: ${spot.address || '정보 없음'}`;
+  //   document.getElementById("spotPhone").innerText = `전화번호: ${spot.phone || '정보 없음'}`;
+  //   document.getElementById("spotFish").innerText = `물고기 종류: ${spot.fishTypes?.join(', ') || '정보 없음'}`;
+  //   document.getElementById("spotPrice").innerText = `이용 요금: ${spot.priceInfo || '정보 없음'}`;
+  //
+  //
+  // }
 </script>
 </body>
 </html>

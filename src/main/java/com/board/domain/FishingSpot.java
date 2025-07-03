@@ -20,6 +20,24 @@ public class FishingSpot {
   @Field("WGS84경도")
   private double longitude;
 
-  @Field("source_file")
-  private String sourceFile;
+  @Field("소재지도로명주소")
+  private String address;
+
+  @Field("시/도")
+  private String city;
+
+  @Field("구")
+  private String gu;
+
+  @Field("동")
+  private String dong;
+
+  @Field("주요어종")
+  private String fishType;
+
+  @Field("이용요금")
+  private String fee;
+
+  @Field("데이터기준일자")
+  private String updatedAt;
 }
