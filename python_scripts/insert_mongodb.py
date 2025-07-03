@@ -13,9 +13,9 @@ def main():
     # 환경변수 읽기
     username = os.getenv("MONGODB_USERNAME")
     password = os.getenv("MONGODB_PASSWORD")
-    host = os.getenv("MONGODB_HOST", "localhost")
-    port = os.getenv("MONGODB_PORT", "27017")
-    database = os.getenv("MONGODB_DATABASE", "mydb")
+    host = os.getenv("MONGODB_HOST")
+    port = os.getenv("MONGODB_PORT")
+    database = os.getenv("MONGODB_DATABASE")
 
     # MongoDB URI 생성 및 클라이언트 연결
     uri = f"mongodb://{username}:{password}@{host}:{port}"
