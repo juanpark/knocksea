@@ -12,8 +12,8 @@ import org.springframework.data.repository.query.Param;
 public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificationExecutor<Post> {
 
     //조회수 증가 쿼리
-    @Modifying(clearAutomatically = true) //데이터 변경
-    @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.postsId = :id")
+    @Modifying(clearAutomatically = false) //데이터 변경
+    @Query(value = "UPDATE posts SET view_count = view_count + 1 WHERE posts_id = :id", nativeQuery = true)
     void increaseViewCount(@Param("id") Long id);
 
     //제목 또는 내용에 keyword가 포함된 게시글 페이지 조회

@@ -8,7 +8,6 @@
       margin: 0;
       background-color: #f4f6f8;
     }
-
     .navbar {
       background-color: #2196F3;
       padding: 15px 30px;
@@ -16,29 +15,24 @@
       font-size: 24px;
       font-weight: bold;
     }
-
     .container {
       max-width: 800px;
       margin: 30px auto;
       padding: 0 20px;
     }
-
     h1 {
       color: #333;
       margin-bottom: 10px;
     }
-
     p {
       font-size: 16px;
       color: #555;
       margin-bottom: 30px;
     }
-
     .button-group {
       display: flex;
       gap: 10px;
     }
-
     .btn {
       display: inline-block;
       padding: 10px 15px;
@@ -52,19 +46,15 @@
       transition: background-color 0.2s;
       font-weight: bold;
     }
-
     .btn:hover {
       background-color: #1976D2;
     }
-
     .btn-delete {
       background-color: #f44336;
     }
-
     .btn-delete:hover {
       background-color: #e53935;
     }
-
     .back-link {
       display: inline-block;
       margin-top: 20px;
@@ -72,7 +62,6 @@
       text-decoration: none;
       font-weight: bold;
     }
-
     .back-link:hover {
       text-decoration: underline;
     }
@@ -101,7 +90,20 @@
   <a th:href="@{/posts/page}" class="back-link">목록으로</a>
 </div>
 
-<script>
+<script th:inline="javascript">
+  window.onload = () => {
+    let postId = [[${post.postsId}]];
+    let urlParams = new URL(window.location.href);
+
+    if (urlParams.searchParams.get('from') === 'edit') {
+        return;
+    }
+
+    fetch('/posts/' + postId + '/viewCount', {
+        method: 'POST'
+    });
+  }
+
   function deletePost(postId) {
     if (!confirm('글을 삭제하시겠습니까?')) {
         return;
