@@ -51,22 +51,23 @@ public class PostService {
         post.setContent(requestDto.getContent());
 
      // 중간 테이블: PostCategory
-        if (requestDto.getCategoryIds() != null) {
-            for (Long categoryId : requestDto.getCategoryIds()) {
-                Category category = categoryRepo.findById(categoryId)
-                    .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
-                PostCategory postCategory = new PostCategory();
-                postCategory.setPost(post);
-                postCategory.setCategory(category);
-                post.getPostCategories().add(postCategory);
-            }
+        if (requestDto.getCategoryId() != null) {
+            Category category = categoryRepo.findById(requestDto.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+            PostCategory postCategory = new PostCategory();
+            postCategory.setPost(post);
+            postCategory.setCategory(category);
+            post.getPostCategories().add(postCategory);
         }
 
         // 중간 테이블: PostTag
-        if (requestDto.getTagIds() != null) {
-            for (Long tagId : requestDto.getTagIds()) {
-                Tag tag = tagRepo.findById(tagId)
-                    .orElseThrow(() -> new IllegalArgumentException("태그를 찾을 수 없습니다."));
+        if (requestDto.getTagNames() != null && !requestDto.getTagNames().isEmpty()) {
+        	List<Tag> tags = new ArrayList<>();
+            for (String tagName : requestDto.getTagNames()) {
+                // 중복 태그 방지
+                Tag tag = tagRepo.findByName(tagName)
+                		.orElseGet(() -> tagRepo.save(new Tag(tagName)));
+
                 PostTag postTag = new PostTag();
                 postTag.setPost(post);
                 postTag.setTag(tag);
