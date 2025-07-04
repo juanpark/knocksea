@@ -147,6 +147,7 @@ public class PostService {
         PostResponseDto dto = new PostResponseDto();
         dto.setPostsId(post.getPostsId());
         dto.setUserId(post.getMember().getId()); // 댓글 사용자 인증을 위해 추가
+        dto.setUserName(post.getMember().getNickname());
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
         dto.setLikeCount(post.getLikeCount());

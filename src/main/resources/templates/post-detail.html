@@ -1,91 +1,141 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <title>게시글 상세</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      background-color: #f4f6f8;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background-color: #f4f6f8;
+        padding-top: 100px;
     }
-    .navbar {
-      background-color: #2196F3;
-      padding: 15px 30px;
-      color: white;
-      font-size: 24px;
-      font-weight: bold;
-    }
+
     .container {
-      max-width: 800px;
-      margin: 30px auto;
-      padding: 0 20px;
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 0 20px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 30px;
     }
+
     h1 {
-      color: #333;
-      margin-bottom: 10px;
+        color: #333;
+        margin-bottom: 20px;
     }
-    p {
-      font-size: 16px;
-      color: #555;
-      margin-bottom: 30px;
+
+    /* 작성자, 조회수 구역 */
+    .post-meta-box {
+        background-color: #f9f9f9;
+        padding: 15px 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #555;
+        display: flex;
+        justify-content: flex-start;
+        gap: 30px;
+        align-items: center;
     }
+
+    /* 본문 구역 */
+    .post-content-box {
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 6px;
+        margin-bottom: 30px;
+        background-color: #fff;
+    }
+
+    .post-content {
+        font-size: 16px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        color: #333;
+    }
+
+    /* 버튼 스타일 */
     .button-group {
-      display: flex;
-      gap: 10px;
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
     }
+
     .btn {
-      display: inline-block;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 4px;
-      background-color: #2196F3;
-      color: white;
-      cursor: pointer;
-      text-decoration: none;
-      text-align: center;
-      transition: background-color 0.2s;
-      font-weight: bold;
+        display: inline-block;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        background-color: #2196F3;
+        color: white;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+        transition: background-color 0.2s;
+        font-weight: bold;
     }
+
     .btn:hover {
-      background-color: #1976D2;
+        background-color: #1976D2;
     }
+
     .btn-delete {
-      background-color: #f44336;
+        background-color: #f44336;
     }
+
     .btn-delete:hover {
-      background-color: #e53935;
+        background-color: #e53935;
     }
+
+    /* 목록 버튼 */
     .back-link {
-      display: inline-block;
-      margin-top: 20px;
-      color: #2196F3;
-      text-decoration: none;
-      font-weight: bold;
+        display: inline-block;
+        color: #2196F3;
+        text-decoration: none;
+        font-weight: bold;
     }
+
     .back-link:hover {
-      text-decoration: underline;
+        text-decoration: underline;
     }
   </style>
+
+  <link rel="stylesheet" th:href="@{/css/nav.css}">
 </head>
+
 <body>
 
-<div class="navbar">
-  knocksea
-</div>
+<div th:replace="nav :: navbar"></div>
 
 <div class="container">
 
   <h1 th:text="${post.title}">게시글 제목</h1>
 
-  <p>조회수: <span th:text="${post.viewCount}"></span></p>
+  <!-- 작성자 / 조회수 구역 -->
+  <div class="post-meta-box">
+    <div>
+      작성자: <span th:text="${post.userName}">작성자</span>
+    </div>
+    <div>
+      조회수: <span th:text="${post.viewCount}"></span>
+    </div>
+  </div>
 
-  <p th:text="${post.content}">게시글 내용</p>
+  <!-- 본문 구역 -->
+  <div class="post-content-box">
+    <div class="post-content" th:text="${post.content}">
+      게시글 내용
+    </div>
+  </div>
 
+  <!-- 수정, 삭제 버튼 -->
   <div class="button-group">
     <a th:href="@{/posts/{id}/edit(id=${post.postsId})}" class="btn">수정하기</a>
-
     <a href="#" th:onclick="|deletePost(${post.postsId})|" class="btn btn-delete">삭제하기</a>
   </div>
+
 
   <!-- 게시글 ID, 작성자 ID (백엔드에서 전달) -->
   <input type="hidden" id="postId" th:value="${post.postsId}" />
@@ -103,47 +153,47 @@
     <div id="comments-container"></div>
   </div>
   <!-- 댓글 영역 끝 -->
-
-  <a th:href="@{/posts/page}" class="back-link">목록으로</a>
+    <!-- 목록으로 -->
+    <a th:href="@{/posts/page}" class="back-link">목록으로</a>
 </div>
 <!--/js/post-detail.js-->
 <!-- 댓글 관련 자바스크립트 분리 파일 import -->
 <script src="/js/post-detail.js"></script>
 <script th:inline="javascript">
   window.onload = () => {
-    let postId = [[${post.postsId}]];
-    let urlParams = new URL(window.location.href);
+      let postId = [[${post.postsId}]];
+      let urlParams = new URL(window.location.href);
 
-    if (urlParams.searchParams.get('from') === 'edit') {
-        return;
-    }
+      if (urlParams.searchParams.get('from') === 'edit') {
+          return;
+      }
 
-    fetch('/posts/' + postId + '/viewCount', {
-        method: 'POST'
-    });
+      fetch('/posts/' + postId + '/viewCount', {
+          method: 'POST'
+      });
   }
 
   function deletePost(postId) {
-    if (!confirm('글을 삭제하시겠습니까?')) {
-        return;
-    }
+      if (!confirm('글을 삭제하시겠습니까?')) {
+          return;
+      }
 
-    const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('accessToken');
 
-    fetch('/posts/' + postId + '/delete', {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    })
-    .then(response => {
-        if (response.ok) {
-            alert('글 삭제 성공!');
-            window.location.href = '/posts/page';
-        } else {
-            alert('글 삭제 실패!');
-        }
-    });
+      fetch('/posts/' + postId + '/delete', {
+          method: 'POST',
+          headers: {
+              'Authorization': 'Bearer ' + token
+          }
+      })
+      .then(response => {
+          if (response.ok) {
+              alert('글 삭제 성공!');
+              window.location.href = '/posts/page';
+          } else {
+              alert('글 삭제 실패!');
+          }
+      });
   }
 </script>
 
