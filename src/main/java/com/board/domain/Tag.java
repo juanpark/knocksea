@@ -18,6 +18,6 @@ public class Tag {
     @Column(nullable = false)
     private String name;
 
-    @ManyToMany(mappedBy = "tags")
-    private Set<Post> posts = new HashSet<>();
+    @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PostTag> postTags = new HashSet<>();
 }

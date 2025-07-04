@@ -3,6 +3,8 @@ package com.board.service;
 import com.board.domain.Category;
 import com.board.domain.Member;
 import com.board.domain.Post;
+import com.board.domain.PostCategory;
+import com.board.domain.PostTag;
 import com.board.domain.Tag;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 //쓰기/수정/삭제 -> @Transactional (실제 DB의 데이터를 실제로 바꿈. 즉, 에러나면 롤백 필요)
 //읽기 -> @Transactional(readOnly = true) (조회는 데이터를 안바꿈. 롤백 기능 필요 없음)
@@ -47,14 +50,28 @@ public class PostService {
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
 
+     // 중간 테이블: PostCategory
         if (requestDto.getCategoryIds() != null) {
-            List<Category> categories = categoryRepo.findAllById(requestDto.getCategoryIds());
-            post.getCategories().addAll(categories);
+            for (Long categoryId : requestDto.getCategoryIds()) {
+                Category category = categoryRepo.findById(categoryId)
+                    .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                PostCategory postCategory = new PostCategory();
+                postCategory.setPost(post);
+                postCategory.setCategory(category);
+                post.getPostCategories().add(postCategory);
+            }
         }
 
+        // 중간 테이블: PostTag
         if (requestDto.getTagIds() != null) {
-            List<Tag> tags = tagRepo.findAllById(requestDto.getTagIds());
-            post.getTags().addAll(tags);
+            for (Long tagId : requestDto.getTagIds()) {
+                Tag tag = tagRepo.findById(tagId)
+                    .orElseThrow(() -> new IllegalArgumentException("태그를 찾을 수 없습니다."));
+                PostTag postTag = new PostTag();
+                postTag.setPost(post);
+                postTag.setTag(tag);
+                post.getPostTags().add(postTag);
+            }
         }
 
         //유저 검증
@@ -155,6 +172,15 @@ public class PostService {
         dto.setUpdatedAt(post.getUpdatedAt());
         dto.setViewCount(post.getViewCount());
 
+        // 카테고리/태그 이름 목록 추출
+        dto.setCategoryNames(post.getPostCategories().stream()
+            .map(pc -> pc.getCategory().getName())
+            .collect(Collectors.toList()));
+
+        dto.setTagNames(post.getPostTags().stream()
+            .map(pt -> pt.getTag().getName())
+            .collect(Collectors.toList()));
+
         return dto;
     }
 
@@ -220,8 +246,7 @@ public class PostService {
             }
 
             if (categoryId != null) {
-                Join<Post, Category> catJoin = root.join("categories");
-                predicates.add(cb.equal(catJoin.get("id"), categoryId));
+                predicates.add(cb.equal(root.get("category").get("id"), categoryId));
             }
 
             if (tagId != null) {

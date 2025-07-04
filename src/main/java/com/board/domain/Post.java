@@ -47,21 +47,11 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "posts_categories",
-            joinColumns = @JoinColumn(name = "posts_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    private Set<Category> categories = new HashSet<>();
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PostCategory> postCategories = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "posts_tags",
-            joinColumns = @JoinColumn(name = "posts_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private Set<Tag> tags = new HashSet<>();
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PostTag> postTags = new HashSet<>();
 
     //게시글 상태
     public enum Status {

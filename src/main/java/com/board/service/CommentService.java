@@ -36,6 +36,7 @@ public class CommentService {
         comment.setContent(request.getContent());
         comment.setMember(member);
         comment.setPost(post);
+        comment.getPost().setStatus(Post.Status.COMPLETED); // 게시글 상태 변경
 
         // 대댓글일 경우
         if (request.getParentId() != null) {
