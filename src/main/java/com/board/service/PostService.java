@@ -153,7 +153,7 @@ public class PostService {
         dto.setLikeCount(post.getLikeCount());
         dto.setDislikeCount(post.getDislikeCount());
         dto.setStatus(post.getStatus().name());
-        dto.setCreateAt(post.getCreateAt());
+        dto.setCreatedAt(post.getCreatedAt());
         dto.setUpdatedAt(post.getUpdatedAt());
         dto.setViewCount(post.getViewCount());
 

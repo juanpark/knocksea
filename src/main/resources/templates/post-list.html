@@ -89,9 +89,18 @@
             text-decoration: underline;
         }
         .post-info {
+            display: flex;
+            justify-content: space-between;
             font-size: 14px;
             color: #777;
             margin-top: 8px;
+        }
+        .left-info {
+            display: flex;
+            gap: 10px;
+        }
+        .right-info {
+            white-space: nowrap;
         }
         .pagination {
             margin-top: 50px;
@@ -163,8 +172,13 @@
             <span th:utext="${post.title}"></span>
         </a>
         <div class="post-info">
-            작성자: <span th:text="${post.userName}">
-        </span> &nbsp; | &nbsp; 조회수: <span th:text="${post.viewCount}"></span>
+            <div class="left-info">
+                작성자: <span th:text="${post.userName}"></span> &nbsp; | &nbsp;
+                조회수: <span th:text="${post.viewCount}"></span>
+            </div>
+            <div class="right-info">
+                작성일: <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+            </div>
         </div>
     </div>
 

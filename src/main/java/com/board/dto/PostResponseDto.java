@@ -19,7 +19,7 @@ public class PostResponseDto {
     private int dislikeCount;
     private String status;
     private int viewCount;
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> categoryNames;
     private List<String> tagNames;
