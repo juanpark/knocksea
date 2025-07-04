@@ -136,45 +136,66 @@
     <a href="#" th:onclick="|deletePost(${post.postsId})|" class="btn btn-delete">삭제하기</a>
   </div>
 
-  <!-- 목록으로 -->
-  <a th:href="@{/posts/page}" class="back-link">목록으로</a>
+
+  <!-- 게시글 ID, 작성자 ID (백엔드에서 전달) -->
+  <input type="hidden" id="postId" th:value="${post.postsId}" />
+  <input type="hidden" id="postOwnerId" th:value="${post.userId}" />
+  <input type="hidden" id="currentUserId" th:value="${currentUserId}" />
+
+
+  <!-- 댓글 영역 시작 -->
+  <div id="comment-container">
+    <h3>댓글</h3>
+
+    <div>
+      <textarea id="newCommentContent" rows="3" style="width: 100%;"></textarea>
+      <button onclick="submitComment()">댓글 작성</button>
+    </div>
+
+    <div id="comments-container"></div>
+  </div>
+  <!-- 댓글 영역 끝 -->
+    <!-- 목록으로 -->
+    <a th:href="@{/posts/page}" class="back-link">목록으로</a>
 </div>
 
+<!-- 댓글 관련 자바스크립트 분리 파일 import -->
+<script src="/js/post-detail.js"></script>
 <script th:inline="javascript">
-  window.onload = () => {
-      let postId = [[${post.postsId}]];
-      let urlParams = new URL(window.location.href);
+  window.addEventListener("DOMContentLoaded", () => {
+    let postId = [[${post.postsId}]];
+    let urlParams = new URL(window.location.href);
 
-      if (urlParams.searchParams.get('from') === 'edit') {
-          return;
-      }
+    if (urlParams.searchParams.get('from') === 'edit') {
+      return;
+    }
 
-      fetch('/posts/' + postId + '/viewCount', {
-          method: 'POST'
-      });
-  }
+    fetch('/posts/' + postId + '/viewCount', {
+      method: 'POST'
+    });
+  }); // <-- 여기서 괄호 닫고, 세미콜론!
 
   function deletePost(postId) {
-      if (!confirm('글을 삭제하시겠습니까?')) {
-          return;
+    if (!confirm('글을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    const token = localStorage.getItem('accessToken');
+
+    fetch('/posts/' + postId + '/delete', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token
       }
-
-      const token = localStorage.getItem('accessToken');
-
-      fetch('/posts/' + postId + '/delete', {
-          method: 'POST',
-          headers: {
-              'Authorization': 'Bearer ' + token
-          }
-      })
-      .then(response => {
-          if (response.ok) {
-              alert('글 삭제 성공!');
-              window.location.href = '/posts/page';
-          } else {
-              alert('글 삭제 실패!');
-          }
-      });
+    })
+    .then(response => {
+      if (response.ok) {
+        alert('글 삭제 성공!');
+        window.location.href = '/posts/page';
+      } else {
+        alert('글 삭제 실패!');
+      }
+    });
   }
 </script>
 
