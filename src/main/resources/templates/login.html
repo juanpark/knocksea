@@ -12,13 +12,7 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     background-color: #f4f6f8;
-  }
-  .navbar {
-    background-color: #2196F3;
-    padding: 15px 30px;
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
+    padding-top: 100px;
   }
   .container {
     display: flex;
@@ -152,11 +146,9 @@
 
 
 </style>
+<link rel="stylesheet" th:href="@{/css/nav.css}">
 <body>
-
-<div class="navbar">
-  knocksea
-</div>
+<div th:replace="nav :: navbar"></div>
 <div class="container">
   <div class="logo-container">
     <div class="logo">
