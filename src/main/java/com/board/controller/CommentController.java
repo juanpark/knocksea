@@ -80,8 +80,8 @@ public class CommentController {
     // 댓글 채택 (로그인 사용자만 가능, 글 작성자여야 함)
     @PostMapping("/{commentId}/adopt")
     public ResponseEntity<Void> adoptComment(@PathVariable Long commentId) {
-        Long userId = getCurrentUserId();
-        commentService.adoptComment(commentId); // 내부 로직에서 권한 체크 필요
+        Long userId = getCurrentUserId(); // 로그인 사용자 ID
+        commentService.adoptComment(commentId, userId); // 권한 검증 포함
         return ResponseEntity.ok().build();
     }
 

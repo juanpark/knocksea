@@ -10,6 +10,7 @@ import com.board.dto.CommentResponse;
 import com.board.exception.CommentNotFoundException;
 import com.board.exception.CustomException;
 import com.board.exception.UnauthorizedCommentAccessException;
+import com.board.exception.UnauthorizedCommentAdoptException;
 import com.board.repository.CommentRepository;
 import com.board.repository.PostRepository;
 import com.board.repository.MemberRepository;
@@ -106,12 +107,21 @@ public class CommentService {
     }
 
     // 댓글 채택
-    public void adoptComment(Long commentId) {
+    public void adoptComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+                .orElseThrow(CommentNotFoundException::new);
+
+        Post post = comment.getPost();
+
+        // 게시글 작성자와 현재 로그인 사용자가 일치하는지 확인
+        if (!post.getMember().getId().equals(userId)) {
+            throw new UnauthorizedCommentAdoptException(); // 채택 권한 없음
+        }
+
         comment.setAnswer(true); // 채택된 댓글 표시
-        comment.getPost().setStatus(Post.Status.ADOPTED); // 게시글 상태 변경
+        post.setStatus(Post.Status.ADOPTED); // 게시글 상태 변경
     }
+
 
     // 게시글 ID로 최상위 댓글 목록 조회
     public List<CommentResponse> getTopLevelCommentsByPost(Long postId) {
