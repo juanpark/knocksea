@@ -1,7 +1,11 @@
 package com.board.controller;
 
+import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,12 +40,19 @@ public class HomeController {
   }
 
   @GetMapping("/login")
-  public String login(Model model) {
+  public String login() {
+    return "login";
+  }
+
+  @GetMapping("/connect-kakao")
+  public ResponseEntity<Void> connectKakao() {
     String location =
         "https://kauth.kakao.com/oauth/authorize?client_id=" + clientId + "&redirect_uri="
             + redirectUri + "&response_type=code&scope=account_email,profile_nickname";
-    model.addAttribute("location", location);
-    return "login";
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setLocation(URI.create(location));
+    return new ResponseEntity<>(headers, HttpStatus.FOUND); // 302 Redirect
   }
 
   @GetMapping("/register")
