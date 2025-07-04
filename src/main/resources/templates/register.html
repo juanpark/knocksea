@@ -227,6 +227,17 @@
 
     const nickname = document.getElementById("nickname").value;
 
+    // 1차 유효성 검사: 길이 확인
+    if (nickname.length === 0) {
+      alert("닉네임을 입력해주세요.");
+      return;
+    }
+
+    if (nickname.length > 10) {
+      alert("닉네임은 10자 이하여야 합니다.");
+      return;
+    }
+
     const response = await fetch(`/check-nickname?nickname=${nickname}`,{
       method: "GET",
       headers: {
@@ -253,6 +264,13 @@
   emailVerifyBtn.addEventListener("click",async()=>{
 
     const email = document.getElementById("email").value;
+
+    // 1차 유효성 검사 : @gmail.com으로 끝나는지 확인
+    if(!email.endsWith("@gmail.com")){
+      alert("이메일은 @gmail.com으로 끝나야 합니다.")
+      return;
+    }
+
     emailVerifyBtn.disabled = true;
     emailVerifyBtn.textContent = "인증 요청 중...";
 
