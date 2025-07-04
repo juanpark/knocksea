@@ -8,13 +8,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             background-color: #f4f6f8;
-        }
-        .navbar {
-            background-color: #2196F3;
-            padding: 15px 30px;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
+            padding-top: 100px;
         }
         .container {
             max-width: 800px;
@@ -137,12 +131,11 @@
             margin-top: 50px;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/css/nav.css}">
 </head>
 <body>
 
-<div class="navbar">
-    knocksea
-</div>
+<div th:replace="nav :: navbar"></div>
 
 <div class="container">
     <h1>게시글 목록</h1>
@@ -170,7 +163,8 @@
             <span th:utext="${post.title}"></span>
         </a>
         <div class="post-info">
-            조회수: <span th:text="${post.viewCount}"></span>
+            작성자: <span th:text="${post.userName}">
+        </span> &nbsp; | &nbsp; 조회수: <span th:text="${post.viewCount}"></span>
         </div>
     </div>
 

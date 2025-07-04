@@ -146,6 +146,7 @@ public class PostService {
     private PostResponseDto convertToResponseDto(Post post) {
         PostResponseDto dto = new PostResponseDto();
         dto.setPostsId(post.getPostsId());
+        dto.setUserName(post.getMember().getNickname());
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
         dto.setLikeCount(post.getLikeCount());

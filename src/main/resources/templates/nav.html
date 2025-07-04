@@ -1,0 +1,66 @@
+<div th:fragment="navbar">
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a th:href="@{/}" class="navbar-logo">
+                <img src="/images/KnockSeaLogo1.png" alt="KnockSea Logo">
+            </a>
+        </div>
+
+        <div class="navbar-right">
+            <a th:href="@{/posts/page}" class="navbar-link">글 목록</a>
+
+            <!-- 로그인 링크 -->
+            <span id="login-link" style="display: none;">
+                <a th:href="@{/login}" class="navbar-link">로그인</a>
+            </span>
+
+            <!-- 로그아웃 섹션 -->
+            <span id="logout-section" style="display: none; display: flex; align-items: center; gap: 10px;">
+                <span id="user-name" class="user-badge"></span>
+                <button id="logout-button" class="navbar-button">로그아웃</button>
+            </span>
+        </div>
+    </nav>
+
+    <!-- ✅ JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Navbar JS Loaded!');
+
+            const token = localStorage.getItem('accessToken');
+            console.log('현재 토큰:', token);
+
+            const loginLink = document.getElementById('login-link');
+            const logoutSection = document.getElementById('logout-section');
+            const logoutButton = document.getElementById('logout-button');
+            const userName = document.getElementById('user-name');
+
+            if (token) {
+                console.log('로그인 상태 감지됨');
+
+                loginLink.style.display = 'none';
+                logoutSection.style.display = 'flex';
+
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    console.log('JWT Payload:', payload);
+                    userName.textContent = payload.sub || 'User';
+                } catch (e) {
+                    console.error('JWT 파싱 에러:', e);
+                    userName.textContent = 'User';
+                }
+
+                logoutButton.addEventListener('click', function () {
+                    localStorage.removeItem('accessToken');
+                    alert('로그아웃 되었습니다!');
+                    location.reload(); // ✅ 현재 페이지 유지
+                });
+            } else {
+                console.log('비로그인 상태 감지됨');
+
+                loginLink.style.display = 'inline';
+                logoutSection.style.display = 'none';
+            }
+        });
+    </script>
+</div>
