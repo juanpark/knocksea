@@ -5,92 +5,180 @@
   <title>낚시터 지도</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: row;
       margin: 0;
+      height: 100vh;
+      overflow: hidden; /* 전체 페이지 스크롤 제거 */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f4f6f8;
     }
+
     .navbar {
+      position: fixed;
+      width: 100%;
+      top: 0;
       background-color: #2196F3;
       padding: 15px 30px;
       color: white;
       font-size: 24px;
       font-weight: bold;
+      z-index: 1001;
     }
-    #map {
-      background-color: aliceblue;
-      width: 100%;
-      height: calc(100vh - 60px);
-    }
+
     .side-panel {
-      position: absolute;
-      left: 0;
-      top: 60px;
       width: 500px;
+      margin-top: 60px; /* 네비바 높이 고려 */
       height: calc(100vh - 60px);
       background-color: #ffffff;
       border-right: 1px solid #ddd;
-      overflow-y: auto;
       box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-      /*display: none; 처음엔 안보이게 */
+      z-index: 999;
+      padding: 16px;
+      overflow-y: auto; /* 사이드 패널만 스크롤 */
+      scrollbar-width: none; /* Firefox */
     }
 
-    .info{
-      padding: 16px;
+    .side-panel::-webkit-scrollbar {
+      display: none; /* Chrome, Safari */
     }
-    .spot-image{
+
+    #map {
+      flex: 1;
+      height: 100vh;
+    }
+
+    .toggle-button {
+      position: absolute;
+      left: 535px;
+      top: 120px;
+      background-color: white;
+      color: #2196F3;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: left 0.3s ease;
+    }
+
+    .post-card {
+      background-color: white;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .post-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .post-title {
+      font-size: 20px;
+      color: #2196F3;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .post-title:hover {
+      text-decoration: underline;
+    }
+
+    .post-info {
+      font-size: 14px;
+      color: #777;
+      margin-top: 8px;
+    }
+
+    .no-posts {
+      text-align: center;
+      font-size: 18px;
+      color: #777;
+      margin-top: 20px;
+    }
+
+    .spot-image img {
       width: 100%;
       height: 300px;
-      background-color: #007bff;
+      object-fit: cover;
+      background-color: #ddd;
     }
-    .spot-column{
-      display: flex;
-      flex-direction: row;
-      width: 100%;
+
+    .divider {
+      border-top: 1px solid #ddd;
+      margin: 20px 0;
     }
-    .spot-row{
+
+    #postPanel {
       display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #postList {
       width: 100%;
-      justify-content: flex-start;
-      gap: 10px;
     }
   </style>
+
   <!-- ✅ Google Maps API 키 필요 -->
   <script async defer
           th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapKey} + '&callback=initMap'}">
   </script>
 </head>
 <body>
+
 <div class="navbar">
   knocksea
 </div>
 
-<!--플로팅 사이드 패널-->
-<div class="side-panel" id="infoPanel">
+<!-- 사이드 패널: 지역 드롭박스 + 낚시터 정보 + 게시글 목록 -->
+<div class="side-panel" id="sidePanel">
+
+  <!-- 드롭박스 -->
+  <div style="margin-bottom: 20px;">
+    <label for="regionSelect">지역 선택:</label>
+    <select id="regionSelect" onchange="filterMarkersByRegion()">
+      <option value="전체">전체</option>
+      <option value="서울특별시">서울특별시</option>
+      <option value="인천광역시">인천광역시</option>
+      <option value="경기도">경기도</option>
+      <option value="충청북도">충청북도</option>
+      <option value="충청남도">충청남도</option>
+      <option value="전라북도">전라북도</option>
+      <option value="전라남도">전라남도</option>
+      <option value="경상북도">경상북도</option>
+      <option value="경상남도">경상남도</option>
+    </select>
+  </div>
+
+  <!-- 낚시터 정보 -->
   <div class="spot-image" id="spotImage">
     <img src="">
   </div>
   <div class="info">
-
-    <!--spot 이름, 카테고리 블록-->
     <div class="spot-column">
       <div class="spot-row">
-        <span id="spot-name">000 낚시터</span>
+        <span id="spotName">송치낚시터</span>
         <div id="spot-category">
-          <span id="category">바다</span>
+          <span id="category">평지</span>
         </div>
       </div>
     </div>
 
-    <!--spot 주소 주요어종 블록-->
     <div class="spot-column">
       <div class="spot-row">
         <div class="spot-icon-row">
           <span class="icon">📍</span>
-          <span id="spot-address">서울특별시 ○○구 ○○동</span>
+          <span id="spotAddress">전북특별자치도 남원시 주천면 웅치길 20</span>
         </div>
         <div class="spot-icon-row">
           <span class="icon">🎣</span>
-          <span>붕어, 송어</span>
+          <span id="spotFish">붕어, 잉어, 향어</span>
         </div>
       </div>
     </div>
@@ -99,71 +187,177 @@
       <div class="spot-row">
         <div class="spot-icon-row">
           <span class="icon">📞</span>
-          <span>010-0000-0000</span>
+          <span id="spotPhone">등록되지 않음</span>
         </div>
         <div class="spot-icon-row">
           <span class="icon">💰</span>
-          <span>금액금액금액</span>
+          <span id="spotPrice">20,000원</span>
         </div>
       </div>
     </div>
+
     <div class="spot-column">
-      <div class="spot-updated">데이터 수집일 : 2025. 06. 27 13:00</div>
+      <div class="spot-updated">데이터 수집일 : <span id="spot-updated">2024-07-16</span></div>
     </div>
+  </div>
+
+  <!-- 구분선 -->
+  <div class="divider"></div>
+
+  <!-- 게시글 목록 -->
+  <div id="postPanel">
+    <h1>게시글 목록</h1>
+    <div id="postList"></div>
   </div>
 </div>
 
+<!-- 토글 버튼 -->
+<button class="toggle-button" id="toggleButton" onclick="toggleSidePanel()">⮜</button>
 
 <div id="map"></div>
 
 <script>
+  // 기존 구글맵 코드
   // let map;
   //
   // function initMap() {
-  //   map = new google.maps.Map(document.getElementById("map"), {
-  //     center: { lat: 36.5, lng: 127.5 }, // 전국 중심
-  //     zoom: 7,
-  //   });
-  //
-  //   // 📌 낚시터 API에서 마커 정보 가져오기
-  //   fetch('/map/fishing-spots')
-  //   .then(res => res.json())
-  //   .then(data => {
-  //     data.forEach(spot => {
-  //       if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
-  //         const pos = {lat:spot.latitude, lng:spot.longitude};
-  //
-  //         const marker = new google.maps.Marker({
-  //           position: pos,
-  //           map: map,
-  //           title: spot.name,
-  //           icon: {
-  //             url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png", // 🔴 빨간 마커 아이콘
-  //           }
-  //         });
-  //
-  //         marker.addListener("click", () => {
-  //           showInfoPanel(spot);
-  //         });
-  //
-  //       }
+  //     map = new google.maps.Map(document.getElementById("map"), {
+  //         center: { lat: 36.5, lng: 127.5 },
+  //         zoom: 7,
   //     });
-  //   })
-  //   .catch(err => {
-  //     console.error("마커 로딩 실패:", err);
-  //   });
+  //
+  //     fetch('/map/fishing-spots')
+  //         .then(res => res.json())
+  //         .then(data => {
+  //             data.forEach(spot => {
+  //                 if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
+  //                     const pos = { lat: spot.latitude, lng: spot.longitude };
+  //
+  //                     const marker = new google.maps.Marker({
+  //                         position: pos,
+  //                         map: map,
+  //                         title: spot.name,
+  //                         icon: {
+  //                             url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+  //                         }
+  //                     });
+  //
+  //                     marker.addListener("click", () => {
+  //                         showInfoPanel(spot);
+  //                     });
+  //                 }
+  //             });
+  //         })
+  //         .catch(err => {
+  //             console.error("마커 로딩 실패:", err);
+  //         });
   // }
-  //
-  // function showInfoPanel(spot) {
-  //   document.getElementById("infoPanel").style.display = "block";
-  //   document.getElementById("spotName").innerText = spot.name || "이름 없음";
-  //   document.getElementById("spotAddress").innerText = `주소: ${spot.address || '정보 없음'}`;
-  //   document.getElementById("spotPhone").innerText = `전화번호: ${spot.phone || '정보 없음'}`;
-  //   document.getElementById("spotFish").innerText = `물고기 종류: ${spot.fishTypes?.join(', ') || '정보 없음'}`;
-  //   document.getElementById("spotPrice").innerText = `이용 요금: ${spot.priceInfo || '정보 없음'}`;
-  //
-  //
-  // }
+
+  let panelVisible = true;
+  const toggleButton = document.getElementById("toggleButton");
+  const initialLeft = toggleButton.style.left;
+
+  function toggleSidePanel() {
+      const panel = document.getElementById("sidePanel");
+
+      if (panelVisible) {
+          panel.style.display = "none";
+          toggleButton.style.left = "0";
+          toggleButton.innerText = "⮞";
+      } else {
+          panel.style.display = "block";
+          toggleButton.style.left = initialLeft;
+          toggleButton.innerText = "⮜";
+          loadPosts();
+      }
+
+      panelVisible = !panelVisible;
+  }
+
+  function loadPosts() {
+      fetch('/posts/api')
+          .then(res => res.json())
+          .then(data => {
+              const container = document.getElementById('postList');
+              container.innerHTML = '';
+
+              if (data.length === 0) {
+                  container.innerHTML = '<div class="no-posts">게시글이 없습니다.</div>';
+                  return;
+              }
+
+              data.forEach(post => {
+                  const postCard = document.createElement('div');
+                  postCard.className = 'post-card';
+                  postCard.innerHTML = `
+                      <a href="/posts/${post.postsId}" class="post-title">${post.title}</a>
+                      <div class="post-info">조회수: ${post.viewCount}</div>
+                  `;
+                  container.appendChild(postCard);
+              });
+          })
+          .catch(err => console.error('게시글 로딩 실패:', err));
+  }
+
+  function loadRandomFishingSpot() {
+      fetch('/map/fishing-spots')
+          .then(res => res.json())
+          .then(data => {
+              if (data.length === 0) return;
+
+              const randomIndex = Math.floor(Math.random() * data.length);
+              const spot = data[randomIndex];
+
+              document.getElementById("spotName").innerText = spot.name || "이름 없음";
+              document.getElementById("category").innerText = spot.spotType || "정보 없음";
+              document.getElementById("spotAddress").innerText = spot.address || "정보 없음";
+              document.getElementById("spotFish").innerText = spot.fishType || "정보 없음";
+              document.getElementById("spotPhone").innerText = (spot.phone && spot.phone !== "NaN") ? spot.phone : "등록되지 않음";
+              document.getElementById("spotPrice").innerText = spot.fee || "정보 없음";
+              document.getElementById("spot-updated").innerText = spot.updatedAt || "정보 없음";
+          })
+          .catch(err => console.error('낚시터 정보 로딩 실패:', err));
+  }
+
+  let fishingSpots = [];
+  let displayedSpots = [];
+
+  function loadFishingSpots() {
+      fetch('/map/fishing-spots')
+          .then(res => res.json())
+          .then(data => {
+              fishingSpots = data;
+              displayedSpots = data;
+              renderMarkers();
+          })
+          .catch(err => console.error('낚시터 데이터 로딩 실패:', err));
+  }
+
+  function renderMarkers() {
+      console.log('현재 마커:', displayedSpots);
+      // 구글맵 주석 유지
+  }
+
+  function filterMarkersByRegion() {
+      const selectedRegion = document.getElementById('regionSelect').value;
+
+      if (selectedRegion === '전체') {
+          displayedSpots = fishingSpots;
+      } else {
+          displayedSpots = fishingSpots.filter(spot => spot.city === selectedRegion);
+      }
+
+      renderMarkers();
+      console.log('선택한 지역:', selectedRegion);
+      console.log('필터링된 데이터:', displayedSpots);
+  }
+
+  window.onload = function () {
+      loadRandomFishingSpot();
+      loadPosts();
+      loadFishingSpots();
+  }
 </script>
+
 </body>
 </html>
