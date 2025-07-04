@@ -1,0 +1,106 @@
+.navbar {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    background-color: #2196F3;
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1001;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-logo img {
+    height: 80px;
+    width: auto;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    margin-right: 60px;
+}
+
+.navbar-link {
+    margin-left: 30px;
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.navbar-link:hover {
+    text-decoration: underline;
+}
+
+.navbar-button {
+    margin-left: 30px;
+    color: white;
+    font-size: 18px;
+    background: none;
+    border: 2px solid white;  /* 버튼 테두리 추가 */
+    border-radius: 4px;
+    padding: 4px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.navbar-button:hover {
+    background-color: white;
+    color: #2196F3;
+    text-decoration: none;
+}
+
+.user-badge {  /* 사용자 이름 스타일 */
+    background-color: white;
+    color: #2196F3;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-left: 20px;
+    white-space: nowrap;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.user-badge:hover {
+    background-color: #1976D2;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+    }
+
+    .navbar-left {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    .navbar-right {
+        width: 100%;
+        justify-content: center;
+        margin-right: 0;
+    }
+
+    .navbar-link, .navbar-button {
+        margin-left: 10px;
+        margin-right: 10px;
+        font-size: 16px;
+    }
+
+    .user-badge {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+}

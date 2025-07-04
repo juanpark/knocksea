@@ -11,6 +11,7 @@ import java.util.List;
 public class PostResponseDto {
 
     private Long postsId;
+    private Long userId; // 댓글 사용자 인증을 위해 추가
     private String userName;
     private String title;
     private String content;
