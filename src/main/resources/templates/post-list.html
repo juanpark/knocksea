@@ -163,7 +163,8 @@
             <span th:utext="${post.title}"></span>
         </a>
         <div class="post-info">
-            조회수: <span th:text="${post.viewCount}"></span>
+            작성자: <span th:text="${post.userName}">
+        </span> &nbsp; | &nbsp; 조회수: <span th:text="${post.viewCount}"></span>
         </div>
     </div>
 
