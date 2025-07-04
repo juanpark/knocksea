@@ -1,18 +1,27 @@
 package com.board.service;
 
+import com.board.auth.CustomUserDetails;
 import com.board.domain.Comment;
 import com.board.domain.Post;
 import com.board.domain.Member;
 import com.board.dto.CommentCreateRequest;
 import com.board.dto.CommentUpdateRequest;
 import com.board.dto.CommentResponse;
+import com.board.exception.CommentNotFoundException;
+import com.board.exception.CustomException;
+import com.board.exception.UnauthorizedCommentAccessException;
 import com.board.repository.CommentRepository;
 import com.board.repository.PostRepository;
 import com.board.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +58,7 @@ public class CommentService {
     }
 
     // 댓글 수정
-    public void updateComment(Long commentId, CommentUpdateRequest request, Long currentUserId) {
+    /*public void updateComment(Long commentId, CommentUpdateRequest request, Long currentUserId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
 
@@ -60,11 +69,21 @@ public class CommentService {
 
         comment.setContent(request.getContent());
         comment.setUpdatedAt(java.time.LocalDateTime.now());
+    }*/
+    public void updateComment(Long commentId, CommentUpdateRequest request, Long userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(CommentNotFoundException::new);
+
+        if (!comment.getMember().getId().equals(userId)) {
+            throw new UnauthorizedCommentAccessException(); // 본인만 수정 가능
+        }
+
+        comment.setContent(request.getContent());
+        comment.setUpdatedAt(LocalDateTime.now());
     }
 
-
     // 댓글 삭제
-    public void deleteComment(Long commentId, Long currentUserId) {
+    /*public void deleteComment(Long commentId, Long currentUserId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
 
@@ -74,8 +93,17 @@ public class CommentService {
         }
 
         commentRepository.delete(comment);
-    }
+    }*/
+    public void deleteComment(Long commentId, Long userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(CommentNotFoundException::new);
 
+        if (!comment.getMember().getId().equals(userId)) {
+            throw new UnauthorizedCommentAccessException(); // 본인만 삭제 가능
+        }
+
+        commentRepository.delete(comment);
+    }
 
     // 댓글 채택
     public void adoptComment(Long commentId) {
