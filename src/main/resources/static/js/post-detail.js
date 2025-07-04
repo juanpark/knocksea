@@ -1,14 +1,23 @@
 const postId = document.getElementById("postId").value;
 const postOwnerId = document.getElementById("postOwnerId").value;
 const accessToken = localStorage.getItem("accessToken");
-const currentUserId = localStorage.getItem("userId");
+const currentUserId = document.getElementById("currentUserId") ? document.getElementById("currentUserId").value : null;
 
-// 댓글 로드
-window.onload = () => {
+// 댓글 새로고침 함수 분리
+function loadComments() {
   fetch(`/api/comments/post/${postId}`)
     .then(res => res.json())
     .then(data => renderComments(data));
-};
+//    .then(data => {
+//          console.log("댓글 데이터:", data);
+//          renderComments(data);
+//    });
+}
+
+// 페이지 최초 진입 시 한 번만 호출
+window.addEventListener("DOMContentLoaded", () => {
+  loadComments();
+});
 
 // 댓글 렌더링
 function renderComments(comments) {
@@ -19,6 +28,18 @@ function renderComments(comments) {
     const commentEl = buildCommentElement(comment);
     container.appendChild(commentEl);
   });
+//    console.log("renderComments 호출!", comments);
+//      const container = document.getElementById("comments-container");
+//      if (!container) {
+//        console.error("comments-container div가 없습니다!");
+//        return;
+//      }
+//      container.innerHTML = "";
+//      comments.forEach(comment => {
+//        console.log("댓글 데이터:", comment);
+//        const commentEl = buildCommentElement(comment);
+//        container.appendChild(commentEl);
+//      });
 }
 
 // 댓글 DOM 구성
@@ -36,8 +57,14 @@ function buildCommentElement(comment, isChild = false) {
   content.textContent = comment.content;
   div.appendChild(content);
 
-  // 버튼들
-  if (currentUserId && Number(currentUserId) === comment.userId) {
+  console.log(
+    "currentUserId:", currentUserId,
+    "comment.userId:", comment.userId,
+    "같나?", Number(currentUserId) === Number(comment.userId)
+  );
+
+  // 수정/삭제 버튼 (내 댓글)
+  if (currentUserId && Number(currentUserId) === Number(comment.userId)) {
     const editBtn = document.createElement("button");
     editBtn.textContent = "수정";
     editBtn.onclick = () => {
@@ -52,20 +79,20 @@ function buildCommentElement(comment, isChild = false) {
     div.appendChild(deleteBtn);
   }
 
-  // 채택 버튼 (게시글 작성자만 가능 & 채택 안 된 경우만)
-  if (postOwnerId === currentUserId && !comment.answer) {
+  // 채택 버튼 (게시글 작성자만 & 채택 안된 댓글만)
+  if (Number(postOwnerId) === Number(currentUserId) && !comment.answer) {
     const adoptBtn = document.createElement("button");
     adoptBtn.textContent = "채택";
     adoptBtn.onclick = () => adoptComment(comment.commentId);
     div.appendChild(adoptBtn);
   }
 
-  // 대댓글
+  // 대댓글 버튼
   const replyBtn = document.createElement("button");
   replyBtn.textContent = "답글";
   replyBtn.onclick = () => {
     const replyContent = prompt("대댓글을 입력하세요");
-    if (replyContent) createComment(replyContent, comment.commentId);
+    if (replyContent) submitComment(replyContent, comment.commentId);
   };
   div.appendChild(replyBtn);
 
@@ -88,8 +115,8 @@ function buildCommentElement(comment, isChild = false) {
   return div;
 }
 
-// 댓글 작성
-function createComment(content = null, parentId = null) {
+// 댓글 작성 (함수명 충돌 방지 submitComment로)
+function submitComment(content = null, parentId = null) {
   const textarea = document.getElementById("newCommentContent");
   const commentContent = content || textarea.value.trim();
 
@@ -109,14 +136,16 @@ function createComment(content = null, parentId = null) {
     }),
   })
     .then(res => {
-      if (!res.ok) throw new Error("작성 실패");
-      return res.json();
+      if (!res.ok) throw new Error("작성 실패: " + res.status);
+      return res.text().then(text => {
+        return text ? JSON.parse(text) : {};
+      });
     })
     .then(() => {
       textarea.value = "";
-      window.onload(); // 댓글 새로고침
+      loadComments();
     })
-    .catch(() => alert("댓글 작성 실패"));
+    .catch((err) => alert("댓글 작성 실패: " + err.message));
 }
 
 // 댓글 수정
@@ -131,7 +160,7 @@ function updateComment(commentId, newContent) {
   })
     .then(res => {
       if (!res.ok) throw new Error("수정 실패");
-      window.onload();
+      loadComments();
     })
     .catch(() => alert("댓글 수정 실패"));
 }
@@ -148,7 +177,7 @@ function deleteComment(commentId) {
   })
     .then(res => {
       if (!res.ok) throw new Error("삭제 실패");
-      window.onload();
+      loadComments();
     })
     .catch(() => alert("댓글 삭제 실패"));
 }
@@ -165,7 +194,7 @@ function adoptComment(commentId) {
   })
     .then(res => {
       if (!res.ok) throw new Error("채택 실패");
-      window.onload();
+      loadComments();
     })
     .catch(() => alert("댓글 채택 실패"));
 }
