@@ -20,13 +20,7 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    // 2-1. 권한 예외 처리 (접근 권한 없음)
-    @ExceptionHandler({SecurityException.class, AccessDeniedException.class})
-    public ResponseEntity<ErrorResponse> handleAccessDenied(Exception ex) {
-        return buildErrorResponse(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.");
-    }
-
-    // 2-2. 권한 부족 (AccessDeniedException → 403 Forbidden)
+    // 2. 권한 부족 (AccessDeniedException → 403 Forbidden)
     // Spring Security는 권한이 부족할 때 AccessDeniedException을 발생시킴 -> 메세지나 상황이 구체적이지 않음
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {

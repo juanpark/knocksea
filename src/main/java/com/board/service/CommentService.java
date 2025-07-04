@@ -1,6 +1,5 @@
 package com.board.service;
 
-import com.board.auth.CustomUserDetails;
 import com.board.domain.Comment;
 import com.board.domain.Post;
 import com.board.domain.Member;
@@ -8,17 +7,12 @@ import com.board.dto.CommentCreateRequest;
 import com.board.dto.CommentUpdateRequest;
 import com.board.dto.CommentResponse;
 import com.board.exception.CommentNotFoundException;
-import com.board.exception.CustomException;
 import com.board.exception.UnauthorizedCommentAccessException;
 import com.board.exception.UnauthorizedCommentAdoptException;
 import com.board.repository.CommentRepository;
 import com.board.repository.PostRepository;
 import com.board.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,7 +115,6 @@ public class CommentService {
         comment.setAnswer(true); // 채택된 댓글 표시
         post.setStatus(Post.Status.ADOPTED); // 게시글 상태 변경
     }
-
 
     // 게시글 ID로 최상위 댓글 목록 조회
     public List<CommentResponse> getTopLevelCommentsByPost(Long postId) {
