@@ -44,11 +44,11 @@ public class AuthController {
     return new ResponseEntity<>(!memberService.checkNickname(nickname), HttpStatus.OK);
   }
 
-  // 이메일 인증 코드 요청 (중복이메일 검증 후 인증코드 전송)
+  // 이메일 인증 코드 요청 (중복 이메일 검증 후 인증코드 전송)
   @PostMapping("/email-verification")
   @ResponseBody
   public ResponseEntity<MessageResponse> sendVerification(
-      @RequestBody EmailVerificationRequest emailVerificationRequest) {
+      @Valid @RequestBody EmailVerificationRequest emailVerificationRequest) {
     MessageResponse emailResponse;
     try {
       if (memberService.findByEmail(emailVerificationRequest.getEmail()) != null) {

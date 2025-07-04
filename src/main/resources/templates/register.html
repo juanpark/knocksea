@@ -287,6 +287,15 @@
       emailVerifyBtn.disabled = false;
       emailVerifyBtn.textContent = "이메일 인증";
       alert(data.message);
+    }else if(response.status === 400) {
+      let message = "";
+
+      for (const [field, errorMsg] of Object.entries(data.data)) {
+        message += `${errorMsg}\n`;
+      }
+      emailVerifyBtn.disabled = false;
+      emailVerifyBtn.textContent = "이메일 인증";
+      alert(message)
     }else{
       emailVerifyBtn.disabled = false;
       emailVerifyBtn.textContent = "이메일 인증";
