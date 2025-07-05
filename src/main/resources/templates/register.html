@@ -198,20 +198,28 @@
       body: JSON.stringify({ email, password, nickname, name })
     });
 
-    if(response.ok){
+    if (response.ok) {
       alert("회원가입이 완료되었습니다. 다시 로그인해주세요.");
-      window.location.href="/login";
-    }else if(response.status === 400){
-      const errors = await response.json();
+      window.location.href = "/login";
+    } else if (response.status === 400) {
+      const errorResponse = await response.json(); // 응답 JSON 파싱
       let message = "";
 
-      for (const [field, errorMsg] of Object.entries(errors.data)) {
-        message += `${errorMsg}\n`;
+      if (typeof errorResponse.message === "string") {
+        message = errorResponse.message;
+      } else if (typeof errorResponse === "object") {
+        for (const [field, errorMsg] of Object.entries(errorResponse)) {
+          message += `${errorMsg}\n`;
+        }
       }
-      alert(message)
-    }else{
-      alert("서버 오류가 발생했습니다. 다시 시도해주세요.")
+
+      alert(message);
+    } else {
+      alert("서버 오류가 발생했습니다. 다시 시도해주세요.");
     }
+
+
+
   });
 
   // 닉네임 중복 확인 요청
