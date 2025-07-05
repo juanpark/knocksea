@@ -115,15 +115,7 @@
       margin-top: 20px;
     }
 
-    .spot-column{
 
-    }
-
-    .spot-row{
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
 
     .spot-image img {
       width: 100%;
@@ -147,10 +139,61 @@
       width: 100%;
     }
 
-    .info{
+    /*낚시터 세부 정보 관련 css*/
+    .spot-info{
       display: flex;
       flex-direction: column;
       gap: 20px;
+      margin-top: 20px;
+    }
+
+    .info-column{
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .info-row{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info-icon-row{
+
+    }
+
+    .info-details{
+      display: flex;
+      gap: 40px;
+    }
+
+    .details-text{
+      font-size:1.0rem;
+    }
+
+    #spotName{
+      font-size: 1.5rem;
+      font-weight: bolder;
+    }
+
+    #spotCategoryWrapper{
+      width: fit-content;
+      height: 100%;
+      box-shadow: 0px 0px 4px #848383;
+      border-radius: 4px;
+      line-height: inherit;
+      padding: 4px;
+    }
+
+    #spotUpdatedWrapper  {
+      font-size: 0.8rem;
+      color: #8e8e8e;
+    }
+
+    #spotUpdated{
+      font-size: 0.8rem;
+      color: #8e8e8e;
     }
   </style>
 
@@ -185,48 +228,51 @@
     </select>
   </div>
 
-  <!-- 낚시터 정보 -->
+  <!-- 낚시터 사진 -->
   <div class="spot-image" id="spotImage">
     <img src="">
   </div>
-  <div class="info">
-    <div class="spot-column">
-      <div class="spot-row">
-        <span id="spotName">송치낚시터</span>
-        <div id="spot-category">
-          <span id="category">평지</span>
+
+  <!--낚시터 정보-->
+  <div class="spot-info">
+    <div class="info-column">
+      <div class="info-row">
+        <span id="spotName" class="details-text">송치낚시터</span>
+        <div id="spotCategoryWrapper">
+          <span id="category" class="details-text">평지</span>
         </div>
       </div>
     </div>
 
-    <div class="spot-column">
-      <div class="spot-row">
-        <div class="spot-icon-row">
+    <div class="info-details">
+
+      <div class="info-column">
+        <div class="info-icon-row">
           <span class="icon">📍</span>
-          <span id="spotAddress">전북특별자치도 남원시 주천면 웅치길 20</span>
+          <span id="spotAddress" class="details-text">전북특별자치도 남원시 주천면 웅치길 20</span>
         </div>
-        <div class="spot-icon-row">
-          <span class="icon">🎣</span>
-          <span id="spotFish">붕어, 잉어, 향어</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="spot-column">
-      <div class="spot-row">
         <div class="spot-icon-row">
           <span class="icon">📞</span>
-          <span id="spotPhone">등록되지 않음</span>
+          <span id="spotPhone" class="details-text">등록되지 않음</span>
+        </div>
+
+      </div>
+      <div class="info-column">
+        <div class="info-icon-row">
+          <span class="icon">🎣</span>
+          <span id="spotFish" class="details-text">붕어, 잉어, 향어</span>
         </div>
         <div class="spot-icon-row">
           <span class="icon">💰</span>
-          <span id="spotPrice">20,000원</span>
+          <span id="spotPrice" class="details-text">20,000원</span>
         </div>
       </div>
     </div>
 
-    <div class="spot-column">
-      <div class="spot-updated">데이터 수집일 : <span id="spot-updated">2024-07-16</span></div>
+    <div class="info-column">
+      <div class="info-row" id="spotUpdatedWrapper">
+        데이터 수집일 : <span id="spotUpdated" class="details-text">2024-07-16</span>
+      </div>
     </div>
   </div>
 
