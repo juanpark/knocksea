@@ -77,7 +77,7 @@
   <h1>게시글 수정</h1>
 
   <div class="form-card">
-    <form id="editForm">
+    <form id="editForm" method="post" th:action="@{/posts/{id}/edit (id=${post.postsId})}">
       <label for="title">제목:</label>
       <input type="text" id="title" name="title" th:value="${post.title}" required>
 
