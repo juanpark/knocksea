@@ -28,7 +28,7 @@
 
     .side-panel {
       width: 500px;
-      margin-top: 60px; /* 네비바 높이 고려 */
+      /*margin-top: 60px; !* 네비바 높이 고려 *!*/
       height: calc(100vh - 60px);
       background-color: #ffffff;
       border-right: 1px solid #ddd;
@@ -37,6 +37,14 @@
       padding: 16px;
       overflow-y: auto; /* 사이드 패널만 스크롤 */
       scrollbar-width: none; /* Firefox */
+      position: absolute;
+      top: 60px;
+      transition: transform 0.3s ease;
+      transform: translateX(0); /* 기본값: 열려 있음 */
+    }
+
+    .side-panel.closed {
+      transform: translateX(-100%);
     }
 
     .side-panel::-webkit-scrollbar {
@@ -50,18 +58,23 @@
 
     .toggle-button {
       position: absolute;
-      left: 535px;
+      left: 532px;
       top: 120px;
       background-color: white;
       color: #2196F3;
       border: none;
       padding: 8px 16px;
-      border-radius: 0 4px 4px 0;
+      border-radius: 0 8px 8px 0;
       cursor: pointer;
       font-weight: bold;
-      z-index: 1000;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 999;
+      box-shadow: 5px 1px 5px rgba(0,0,0,0.2);
       transition: left 0.3s ease;
+      height: 50px;
+    }
+
+    .toggle-button.closed {
+      left: 0;
     }
 
     .post-card {
@@ -102,6 +115,16 @@
       margin-top: 20px;
     }
 
+    .spot-column{
+
+    }
+
+    .spot-row{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .spot-image img {
       width: 100%;
       height: 300px;
@@ -122,6 +145,12 @@
 
     #postList {
       width: 100%;
+    }
+
+    .info{
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
   </style>
 
@@ -217,61 +246,63 @@
 <div id="map"></div>
 
 <script>
-  // 기존 구글맵 코드
-  // let map;
-  //
-  // function initMap() {
-  //     map = new google.maps.Map(document.getElementById("map"), {
-  //         center: { lat: 36.5, lng: 127.5 },
-  //         zoom: 7,
-  //     });
-  //
-  //     fetch('/map/fishing-spots')
-  //         .then(res => res.json())
-  //         .then(data => {
-  //             data.forEach(spot => {
-  //                 if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
-  //                     const pos = { lat: spot.latitude, lng: spot.longitude };
-  //
-  //                     const marker = new google.maps.Marker({
-  //                         position: pos,
-  //                         map: map,
-  //                         title: spot.name,
-  //                         icon: {
-  //                             url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-  //                         }
-  //                     });
-  //
-  //                     marker.addListener("click", () => {
-  //                         showInfoPanel(spot);
-  //                     });
-  //                 }
-  //             });
-  //         })
-  //         .catch(err => {
-  //             console.error("마커 로딩 실패:", err);
-  //         });
-  // }
+  //기존 구글맵 코드
+  let map;
+
+  function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 36.5, lng: 127.5 },
+          zoom: 7,
+      });
+
+      fetch('/map/fishing-spots')
+          .then(res => res.json())
+          .then(data => {
+              data.forEach(spot => {
+                  if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
+                      const pos = { lat: spot.latitude, lng: spot.longitude };
+
+                      const marker = new google.maps.Marker({
+                          position: pos,
+                          map: map,
+                          title: spot.name,
+                          icon: {
+                              url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                          }
+                      });
+
+                      // marker.addListener("click", () => {
+                      //     showInfoPanel(spot);
+                      // });
+                  }
+              });
+          })
+          .catch(err => {
+              console.error("마커 로딩 실패:", err);
+          });
+  }
 
   let panelVisible = true;
   const toggleButton = document.getElementById("toggleButton");
-  const initialLeft = toggleButton.style.left;
+  const sidePanel = document.getElementById("sidePanel");
 
   function toggleSidePanel() {
-      const panel = document.getElementById("sidePanel");
+    panelVisible = !panelVisible;
 
-      if (panelVisible) {
-          panel.style.display = "none";
-          toggleButton.style.left = "0";
-          toggleButton.innerText = "⮞";
-      } else {
-          panel.style.display = "block";
-          toggleButton.style.left = initialLeft;
-          toggleButton.innerText = "⮜";
-          loadPosts();
-      }
+    if (panelVisible) {
+      sidePanel.classList.remove("closed");
+      toggleButton.classList.remove("closed");
+      toggleButton.innerText = "⮜";
+      toggleButton.style.left = "532px";
+      loadPosts();
+    } else {
+      sidePanel.classList.add("closed");
+      toggleButton.classList.add("closed");
+      toggleButton.innerText = "⮞";
+      toggleButton.style.left = "0";
+    }
 
-      panelVisible = !panelVisible;
+      // panelVisible = !panelVisible;
   }
 
   function loadPosts() {
