@@ -144,6 +144,13 @@
     text-decoration: underline;
   }
 
+  .error-message{
+    color:red;
+    margin-left:110px;
+    font-size: 16px;
+    font-weight: bolder;
+  }
+
 
 </style>
 <link rel="stylesheet" th:href="@{/css/nav.css}">
@@ -156,19 +163,22 @@
     </div>
   </div>
   <div class="login-container">
-    <form id="login-form" th:action="@{/login}" method="post">
+    <form id="login-form" th:action="@{/login}" th:object="${userLogin}" method="post">
       <div class="form-group">
         <label for="email">이메일 </label>
         <div class="input-button-wrapper">
-          <input type="text" id="email" name="email" required/>
+          <input type="text" id="email" name="email" th:field="*{email}" required/>
         </div>
       </div>
       <div class="form-group">
         <label for="password">비밀번호 </label>
         <div class="input-button-wrapper">
-          <input type="password" id="password" name="password" required/>
+          <input type="password" id="password" name="password" th:field="*{password}" required/>
         </div>
       </div>
+      <p class="error-message" th:if="${#fields.hasErrors('email')}" th:errors="*{email}" ></p>
+      <p class="error-message" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+      <p class="error-message" th:if="${errors != null and errors != ''}" th:text="${errors}"></p>
       <div class="login-group">
         <button type="submit" id="login-button">로그인</button>
         <button id="kakao-login-btn">
