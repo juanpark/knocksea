@@ -4,52 +4,451 @@
   <meta charset="UTF-8">
   <title>낚시터 지도</title>
   <style>
-    #map {
+    body {
+      display: flex;
+      flex-direction: row;
+      margin: 0;
+      height: 100vh;
+      overflow: hidden; /* 전체 페이지 스크롤 제거 */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f8;
+    }
+
+    .navbar {
+      position: fixed;
       width: 100%;
-      height: 600px;
+      top: 0;
+      background-color: #2196F3;
+      padding: 15px 30px;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      z-index: 1001;
+    }
+
+    .side-panel {
+      width: 500px;
+      /*margin-top: 60px; !* 네비바 높이 고려 *!*/
+      height: calc(100vh - 60px);
+      background-color: #ffffff;
+      border-right: 1px solid #ddd;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      z-index: 999;
+      padding: 16px;
+      overflow-y: auto; /* 사이드 패널만 스크롤 */
+      scrollbar-width: none; /* Firefox */
+      position: absolute;
+      top: 60px;
+      transition: transform 0.3s ease;
+      transform: translateX(0); /* 기본값: 열려 있음 */
+    }
+
+    .side-panel.closed {
+      transform: translateX(-100%);
+    }
+
+    .side-panel::-webkit-scrollbar {
+      display: none; /* Chrome, Safari */
+    }
+
+    #map {
+      flex: 1;
+      height: 100vh;
+    }
+
+    .toggle-button {
+      position: absolute;
+      left: 532px;
+      top: 120px;
+      background-color: white;
+      color: #2196F3;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 0 8px 8px 0;
+      cursor: pointer;
+      font-weight: bold;
+      z-index: 999;
+      box-shadow: 5px 1px 5px rgba(0,0,0,0.2);
+      transition: left 0.3s ease;
+      height: 50px;
+    }
+
+    .toggle-button.closed {
+      left: 0;
+    }
+
+    .post-card {
+      background-color: white;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .post-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .post-title {
+      font-size: 20px;
+      color: #2196F3;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .post-title:hover {
+      text-decoration: underline;
+    }
+
+    .post-info {
+      font-size: 14px;
+      color: #777;
+      margin-top: 8px;
+    }
+
+    .no-posts {
+      text-align: center;
+      font-size: 18px;
+      color: #777;
+      margin-top: 20px;
+    }
+
+
+
+    .spot-image img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      background-color: #ddd;
+    }
+
+    .divider {
+      border-top: 1px solid #ddd;
+      margin: 20px 0;
+    }
+
+    #postPanel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #postList {
+      width: 100%;
+    }
+
+    /*낚시터 세부 정보 관련 css*/
+    .spot-info{
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .info-column{
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .info-row{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info-icon-row{
+
+    }
+
+    .info-details{
+      display: flex;
+      gap: 40px;
+    }
+
+    .details-text{
+      font-size:1.0rem;
+    }
+
+    #spotName{
+      font-size: 1.5rem;
+      font-weight: bolder;
+    }
+
+    #spotCategoryWrapper{
+      width: fit-content;
+      height: 100%;
+      box-shadow: 0px 0px 4px #848383;
+      border-radius: 4px;
+      line-height: inherit;
+      padding: 4px;
+    }
+
+    #spotUpdatedWrapper  {
+      font-size: 0.8rem;
+      color: #8e8e8e;
+    }
+
+    #spotUpdated{
+      font-size: 0.8rem;
+      color: #8e8e8e;
     }
   </style>
+
+  <!-- ✅ Google Maps API 키 필요 -->
+  <script async defer
+          th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapKey} + '&callback=initMap'}">
+  </script>
 </head>
 <body>
-<!-- ✅ Google Maps API 키 필요 -->
-<script async defer
-        th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapKey} + '&callback=initMap'}">
-</script>
-<h2>전국 낚시터 지도</h2>
+
+<div class="navbar">
+  knocksea
+</div>
+
+<!-- 사이드 패널: 지역 드롭박스 + 낚시터 정보 + 게시글 목록 -->
+<div class="side-panel closed" id="sidePanel">
+
+  <!-- 드롭박스 -->
+  <div style="margin-bottom: 20px;">
+    <label for="regionSelect">지역 선택:</label>
+    <select id="regionSelect" onchange="filterMarkersByRegion()">
+      <option value="전체">전체</option>
+      <option value="서울특별시">서울특별시</option>
+      <option value="인천광역시">인천광역시</option>
+      <option value="경기도">경기도</option>
+      <option value="충청북도">충청북도</option>
+      <option value="충청남도">충청남도</option>
+      <option value="전라북도">전라북도</option>
+      <option value="전라남도">전라남도</option>
+      <option value="경상북도">경상북도</option>
+      <option value="경상남도">경상남도</option>
+    </select>
+  </div>
+
+  <!-- 낚시터 사진 -->
+  <div class="spot-image" id="spotImage">
+    <img src="https://source.unsplash.com/random" alt="낚시터 이미지">
+  </div>
+
+  <!--낚시터 정보-->
+  <div class="spot-info">
+    <div class="info-column">
+      <div class="info-row">
+        <span id="spotName" class="details-text">송치낚시터</span>
+        <div id="spotCategoryWrapper">
+          <span id="category" class="details-text">평지</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-details">
+
+      <div class="info-column">
+        <div class="info-icon-row">
+          <span class="icon">📍</span>
+          <span id="spotAddress" class="details-text">전북특별자치도 남원시 주천면 웅치길 20</span>
+        </div>
+        <div class="spot-icon-row">
+          <span class="icon">📞</span>
+          <span id="spotPhone" class="details-text">등록되지 않음</span>
+        </div>
+
+      </div>
+      <div class="info-column">
+        <div class="info-icon-row">
+          <span class="icon">🎣</span>
+          <span id="spotFish" class="details-text">붕어, 잉어, 향어</span>
+        </div>
+        <div class="spot-icon-row">
+          <span class="icon">💰</span>
+          <span id="spotPrice" class="details-text">20,000원</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-column">
+      <div class="info-row" id="spotUpdatedWrapper">
+        데이터 수집일 : <span id="spotUpdated" class="details-text">2024-07-16</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 구분선 -->
+  <div class="divider"></div>
+
+  <!-- 게시글 목록 -->
+  <div id="postPanel">
+    <h1>게시글 목록</h1>
+    <div id="postList"></div>
+  </div>
+</div>
+
+<!-- 토글 버튼 -->
+<button class="toggle-button closed" id="toggleButton" onclick="toggleSidePanel()">⮜</button>
+
 <div id="map"></div>
 
 <script>
+  //기존 구글맵 코드
   let map;
+  let fishingSpots=[];
+  let displayedSpots=[]
+  let panelVisible = true;
+  const toggleButton = document.getElementById("toggleButton");
+  const sidePanel = document.getElementById("sidePanel");
+
 
   function initMap() {
-    map = new google.maps.Map(document.getElementById("map"), {
-      center: { lat: 36.5, lng: 127.5 }, // 전국 중심
-      zoom: 7,
-    });
-
-    // 📌 낚시터 API에서 마커 정보 가져오기
-    fetch('/map/fishing-spots')
-    .then(res => res.json())
-    .then(data => {
-      data.forEach(spot => {
-        if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
-          const pos = {lat:spot.latitude, lng:spot.longitude};
-
-          const marker = new google.maps.Marker({
-            position: pos,
-            map: map,
-            title: spot.name,
-            icon: {
-              url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png", // 🔴 빨간 마커 아이콘
-            }
-          });
-        }
+      map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 36.5, lng: 127.5 },
+          zoom: 7,
       });
-    })
-    .catch(err => {
-      console.error("마커 로딩 실패:", err);
-    });
+
+      fetch('/map/fishing-spots')
+          .then(res => res.json())
+          .then(data => {
+            fishingSpots = data;
+            displayedSpots = data;
+
+              data.forEach(spot => {
+                  if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
+                      const pos = { lat: spot.latitude, lng: spot.longitude };
+
+                      const marker = new google.maps.Marker({
+                          position: pos,
+                          map: map,
+                          title: spot.name,
+                          icon: {
+                              url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                          }
+                      });
+
+                      marker.addListener("click", () => {
+                        loadFishingSpot(spot);
+                        fetch('/map/spot-image')
+                        .then(res => res.json())
+                        .then(data => {
+                          const imageUrl = data.imageUrl;
+                          const imgElement = document.getElementById("spotImage").querySelector("img");
+                          imgElement.src = imageUrl;
+                        })
+                        .catch(err => {
+                          console.error(err);
+                          document.getElementById("spotImage").querySelector("img").src = "https://placehold.co/600x400";
+                        });
+                        openSidePanel(); // 클릭 시 항상 열리도록
+                      });
+                  }
+              });
+          })
+          .catch(err => {
+              console.error("마커 로딩 실패:", err);
+          });
+  }
+
+
+  // 사이드 패널 토글 버튼 열림, 닫힘 함수
+  function toggleSidePanel() {
+    panelVisible = !panelVisible;
+
+    if (panelVisible) {
+      sidePanel.classList.remove("closed");
+      toggleButton.classList.remove("closed");
+      toggleButton.innerText = "⮜";
+      toggleButton.style.left = "532px";
+      loadPosts();
+    } else {
+      sidePanel.classList.add("closed");
+      toggleButton.classList.add("closed");
+      toggleButton.innerText = "⮞";
+      toggleButton.style.left = "0";
+    }
+  }
+
+  // 마커 클릭 시 사이드 패널 항상 열리게 하는 함수
+  function openSidePanel(){
+    panelVisible = true;
+    sidePanel.classList.remove("closed");
+    toggleButton.classList.remove("closed");
+    toggleButton.innerText = "⮜";
+    toggleButton.style.left = "532px";
+  }
+
+  // 마커 클릭 시 장소 데이터 설정 함수
+  function loadFishingSpot(spot) {
+    document.getElementById("spotName").innerText = spot.name || "이름 없음";
+    document.getElementById("category").innerText = spot.spotType || "정보 없음";
+    document.getElementById("spotAddress").innerText = spot.address || "정보 없음";
+    document.getElementById("spotFish").innerText = spot.fishType || "정보 없음";
+    document.getElementById("spotPhone").innerText = (spot.phone && spot.phone !== "NaN") ? spot.phone : "등록되지 않음";
+    document.getElementById("spotPrice").innerText = spot.fee || "정보 없음";
+    document.getElementById("spotUpdated").innerText = spot.updatedAt || "정보 없음";
+  }
+
+  // 게시물 리스트 호출 함수
+  function loadPosts() {
+      fetch('/posts/api')
+          .then(res => res.json())
+          .then(data => {
+              const container = document.getElementById('postList');
+              container.innerHTML = '';
+
+              if (data.length === 0) {
+                  container.innerHTML = '<div class="no-posts">게시글이 없습니다.</div>';
+                  return;
+              }
+
+              data.forEach(post => {
+                  const postCard = document.createElement('div');
+                  postCard.className = 'post-card';
+                  postCard.innerHTML = `
+                      <a href="/posts/${post.postsId}" class="post-title">${post.title}</a>
+                      <div class="post-info">조회수: ${post.viewCount}</div>
+                  `;
+                  container.appendChild(postCard);
+              });
+          })
+          .catch(err => console.error('게시글 로딩 실패:', err));
+  }
+
+  function loadFishingSpots() {
+      fetch('/map/fishing-spots')
+          .then(res => res.json())
+          .then(data => {
+              fishingSpots = data;
+              displayedSpots = data;
+              renderMarkers();
+          })
+          .catch(err => console.error('낚시터 데이터 로딩 실패:', err));
+  }
+
+  function renderMarkers() {
+      console.log('현재 마커:', displayedSpots);
+      // 구글맵 주석 유지
+  }
+
+  function filterMarkersByRegion() {
+      const selectedRegion = document.getElementById('regionSelect').value;
+
+      if (selectedRegion === '전체') {
+          displayedSpots = fishingSpots;
+      } else {
+          displayedSpots = fishingSpots.filter(spot => spot.city === selectedRegion);
+      }
+
+      renderMarkers();
+      console.log('선택한 지역:', selectedRegion);
+      console.log('필터링된 데이터:', displayedSpots);
+  }
+
+  window.onload = function () {
+      loadPosts();
+      loadFishingSpots();
   }
 </script>
+
 </body>
 </html>

@@ -10,7 +10,7 @@ def main():
     dotenv_path = os.path.join(project_root, '.env')
     load_dotenv(dotenv_path)
 
-    # 환경변수 읽기
+    # 로컬 환경변수 읽기
     username = os.getenv("MONGODB_USERNAME")
     password = os.getenv("MONGODB_PASSWORD")
     host = os.getenv("MONGODB_HOST")
@@ -18,9 +18,11 @@ def main():
     database = os.getenv("MONGODB_DATABASE")
 
     # MongoDB URI 생성 및 클라이언트 연결
-    uri = f"mongodb://{username}:{password}@{host}:{port}"
+    # uri = f"mongodb://{username}:{password}@{host}:{port}"
+    uri=os.getenv("MONGODB_URI")
+
     client = MongoClient(uri)
-    db = client[database]
+    db = client["knocksea"]
     collection = db["fishing_spot"]
 
     # CSV 파일 경로
