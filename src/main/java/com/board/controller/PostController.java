@@ -189,4 +189,11 @@ public class PostController {
         postService.updateStatus(postId, status);
         return "redirect:/post-detail";
     }
+
+    //map 관련 메서드
+    @GetMapping("/api")
+    @ResponseBody
+    public List<PostResponseDto> getAllPostsApi() {
+        return postService.getAllPosts();
+    }
 }
