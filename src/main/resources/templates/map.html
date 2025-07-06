@@ -209,7 +209,7 @@
 </div>
 
 <!-- 사이드 패널: 지역 드롭박스 + 낚시터 정보 + 게시글 목록 -->
-<div class="side-panel" id="sidePanel">
+<div class="side-panel closed" id="sidePanel">
 
   <!-- 드롭박스 -->
   <div style="margin-bottom: 20px;">
@@ -230,7 +230,7 @@
 
   <!-- 낚시터 사진 -->
   <div class="spot-image" id="spotImage">
-    <img src="">
+    <img src="https://source.unsplash.com/random" alt="낚시터 이미지">
   </div>
 
   <!--낚시터 정보-->
@@ -287,13 +287,19 @@
 </div>
 
 <!-- 토글 버튼 -->
-<button class="toggle-button" id="toggleButton" onclick="toggleSidePanel()">⮜</button>
+<button class="toggle-button closed" id="toggleButton" onclick="toggleSidePanel()">⮜</button>
 
 <div id="map"></div>
 
 <script>
   //기존 구글맵 코드
   let map;
+  let fishingSpots=[];
+  let displayedSpots=[]
+  let panelVisible = true;
+  const toggleButton = document.getElementById("toggleButton");
+  const sidePanel = document.getElementById("sidePanel");
+
 
   function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
@@ -304,6 +310,9 @@
       fetch('/map/fishing-spots')
           .then(res => res.json())
           .then(data => {
+            fishingSpots = data;
+            displayedSpots = data;
+
               data.forEach(spot => {
                   if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
                       const pos = { lat: spot.latitude, lng: spot.longitude };
@@ -317,9 +326,21 @@
                           }
                       });
 
-                      // marker.addListener("click", () => {
-                      //     showInfoPanel(spot);
-                      // });
+                      marker.addListener("click", () => {
+                        loadFishingSpot(spot);
+                        fetch('/map/spot-image')
+                        .then(res => res.json())
+                        .then(data => {
+                          const imageUrl = data.imageUrl;
+                          const imgElement = document.getElementById("spotImage").querySelector("img");
+                          imgElement.src = imageUrl;
+                        })
+                        .catch(err => {
+                          console.error(err);
+                          document.getElementById("spotImage").querySelector("img").src = "https://placehold.co/600x400";
+                        });
+                        openSidePanel(); // 클릭 시 항상 열리도록
+                      });
                   }
               });
           })
@@ -328,10 +349,8 @@
           });
   }
 
-  let panelVisible = true;
-  const toggleButton = document.getElementById("toggleButton");
-  const sidePanel = document.getElementById("sidePanel");
 
+  // 사이드 패널 토글 버튼 열림, 닫힘 함수
   function toggleSidePanel() {
     panelVisible = !panelVisible;
 
@@ -347,10 +366,29 @@
       toggleButton.innerText = "⮞";
       toggleButton.style.left = "0";
     }
-
-      // panelVisible = !panelVisible;
   }
 
+  // 마커 클릭 시 사이드 패널 항상 열리게 하는 함수
+  function openSidePanel(){
+    panelVisible = true;
+    sidePanel.classList.remove("closed");
+    toggleButton.classList.remove("closed");
+    toggleButton.innerText = "⮜";
+    toggleButton.style.left = "532px";
+  }
+
+  // 마커 클릭 시 장소 데이터 설정 함수
+  function loadFishingSpot(spot) {
+    document.getElementById("spotName").innerText = spot.name || "이름 없음";
+    document.getElementById("category").innerText = spot.spotType || "정보 없음";
+    document.getElementById("spotAddress").innerText = spot.address || "정보 없음";
+    document.getElementById("spotFish").innerText = spot.fishType || "정보 없음";
+    document.getElementById("spotPhone").innerText = (spot.phone && spot.phone !== "NaN") ? spot.phone : "등록되지 않음";
+    document.getElementById("spotPrice").innerText = spot.fee || "정보 없음";
+    document.getElementById("spotUpdated").innerText = spot.updatedAt || "정보 없음";
+  }
+
+  // 게시물 리스트 호출 함수
   function loadPosts() {
       fetch('/posts/api')
           .then(res => res.json())
@@ -375,29 +413,6 @@
           })
           .catch(err => console.error('게시글 로딩 실패:', err));
   }
-
-  function loadRandomFishingSpot() {
-      fetch('/map/fishing-spots')
-          .then(res => res.json())
-          .then(data => {
-              if (data.length === 0) return;
-
-              const randomIndex = Math.floor(Math.random() * data.length);
-              const spot = data[randomIndex];
-
-              document.getElementById("spotName").innerText = spot.name || "이름 없음";
-              document.getElementById("category").innerText = spot.spotType || "정보 없음";
-              document.getElementById("spotAddress").innerText = spot.address || "정보 없음";
-              document.getElementById("spotFish").innerText = spot.fishType || "정보 없음";
-              document.getElementById("spotPhone").innerText = (spot.phone && spot.phone !== "NaN") ? spot.phone : "등록되지 않음";
-              document.getElementById("spotPrice").innerText = spot.fee || "정보 없음";
-              document.getElementById("spot-updated").innerText = spot.updatedAt || "정보 없음";
-          })
-          .catch(err => console.error('낚시터 정보 로딩 실패:', err));
-  }
-
-  let fishingSpots = [];
-  let displayedSpots = [];
 
   function loadFishingSpots() {
       fetch('/map/fishing-spots')
@@ -430,7 +445,6 @@
   }
 
   window.onload = function () {
-      loadRandomFishingSpot();
       loadPosts();
       loadFishingSpots();
   }
