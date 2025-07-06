@@ -8,8 +8,8 @@ spring:
     driver-class-name: ${DB_DRIVER_CLASS_NAME}
   data:
     mongodb: # 낚시터 데이터 DB
-#      uri: ${MONGODB_URI}
-       uri: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_DATABASE}?authSource=admin
+      uri: ${MONGODB_URI}
+#       uri: mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_DATABASE}?authSource=admin
   jpa:
     hibernate:
       ddl-auto: update
