@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <title>게시글 상세</title>
   <style>
@@ -7,36 +8,65 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       background-color: #f4f6f8;
-    }
-
-    .navbar {
-      background-color: #2196F3;
-      padding: 15px 30px;
-      color: white;
-      font-size: 24px;
-      font-weight: bold;
+      padding-top: 100px;
     }
 
     .container {
       max-width: 800px;
       margin: 30px auto;
       padding: 0 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 30px;
     }
 
     h1 {
       color: #333;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
 
-    p {
-      font-size: 16px;
+    .post-meta-box {
+      background-color: #f9f9f9;
+      padding: 15px 20px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
       color: #555;
-      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
+    .left-info {
+      display: flex;
+      gap: 30px;
+    }
+
+    .right-info {
+      white-space: nowrap;
+    }
+
+    .post-content-box {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 6px;
+      margin-bottom: 30px;
+      background-color: #fff;
+    }
+
+    .post-content {
+      font-size: 16px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: #333;
+    }
+
+    /* 버튼 스타일 */
     .button-group {
       display: flex;
       gap: 10px;
+      margin-bottom: 20px;
     }
 
     .btn {
@@ -65,9 +95,9 @@
       background-color: #e53935;
     }
 
+    /* 목록 버튼 */
     .back-link {
       display: inline-block;
-      margin-top: 20px;
       color: #2196F3;
       text-decoration: none;
       font-weight: bold;
@@ -77,51 +107,110 @@
       text-decoration: underline;
     }
   </style>
+
+  <link rel="stylesheet" th:href="@{/css/nav.css}">
 </head>
+
 <body>
 
-<div class="navbar">
-  knocksea
-</div>
+<div th:replace="nav :: navbar"></div>
 
 <div class="container">
 
   <h1 th:text="${post.title}">게시글 제목</h1>
 
-  <p>조회수: <span th:text="${post.viewCount}"></span></p>
+  <!-- 작성자 / 조회수 / 작성일 or 수정일 구역 -->
+  <div class="post-meta-box">
+    <div class="left-info">
+      <div>
+        작성자: <span th:text="${post.userName}">작성자</span>
+      </div>
+      <div>
+        조회수: <span th:text="${post.viewCount}"></span>
+      </div>
+    </div>
+    <div class="right-info">
+      <!-- 수정한 경우: 수정일만 출력 -->
+      <div th:if="${post.updatedAt != null and post.updatedAt != post.createdAt}">
+        수정일: <span th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}"></span>
+      </div>
+      <!-- 수정 안 한 경우: 작성일 출력 -->
+      <div th:if="${post.updatedAt == null or post.updatedAt == post.createdAt}">
+        작성일: <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+      </div>
+    </div>
+  </div>
 
-  <p th:text="${post.content}">게시글 내용</p>
+  <!-- 본문 구역 -->
+  <div class="post-content-box">
+    <div class="post-content" th:text="${post.content}">
+      게시글 내용
+    </div>
+  </div>
 
+  <!-- 수정, 삭제 버튼 -->
   <div class="button-group">
     <a th:href="@{/posts/{id}/edit(id=${post.postsId})}" class="btn">수정하기</a>
-
     <a href="#" th:onclick="|deletePost(${post.postsId})|" class="btn btn-delete">삭제하기</a>
   </div>
 
+  <!-- 게시글 ID, 작성자 ID (백엔드에서 전달) -->
+  <input type="hidden" id="postId" th:value="${post.postsId}" />
+  <input type="hidden" id="postOwnerId" th:value="${post.userId}" />
+  <input type="hidden" id="currentUserId" th:value="${currentUserId}" />
+
+  <!-- 댓글 영역 시작 -->
+  <div id="comment-container">
+    <h3>댓글</h3>
+
+    <div>
+      <textarea id="newCommentContent" rows="3" style="width: 100%;"></textarea>
+      <button onclick="submitComment()">댓글 작성</button>
+    </div>
+
+    <div id="comments-container"></div>
+  </div>
+  <!-- 댓글 영역 끝 -->
+
+  <!-- 목록으로 -->
   <a th:href="@{/posts/page}" class="back-link">목록으로</a>
 </div>
 
-<script>
+<!-- 댓글 관련 자바스크립트 분리 파일 import -->
+<script src="/js/post-detail.js"></script>
+<script th:inline="javascript">
+  window.addEventListener("DOMContentLoaded", () => {
+    let postId = [[${post.postsId}]];
+    let urlParams = new URL(window.location.href);
+
+    if (urlParams.searchParams.get('from') === 'edit') {
+      return;
+    }
+
+    fetch('/posts/' + postId + '/viewCount', {
+      method: 'POST'
+    });
+  });
+
   function deletePost(postId) {
     if (!confirm('글을 삭제하시겠습니까?')) {
-        return;
+      return;
     }
 
     const token = localStorage.getItem('accessToken');
 
     fetch('/posts/' + postId + '/delete', {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
     })
     .then(response => {
-        if (response.ok) {
-            alert('글 삭제 성공!');
-            window.location.href = '/posts/page';
-        } else {
-            alert('글 삭제 실패!');
-        }
+      if (response.ok) {
+        window.location.replace('/posts/page');
+      } else {
+        alert('글 삭제 실패!');
+      }
     });
   }
 </script>

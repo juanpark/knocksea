@@ -11,13 +11,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       background-color: #f4f6f8;
-    }
-    .navbar {
-      background-color: #2196F3;
-      padding: 15px 30px;
-      color: white;
-      font-size: 24px;
-      font-weight: bold;
+      padding-top: 100px;
     }
     .container {
       display: flex;
@@ -122,12 +116,10 @@
       background-color: #0056b3;
     }
   </style>
+  <link rel="stylesheet" th:href="@{/css/nav.css}">
 </head>
 <body>
-
-<div class="navbar">
-  knocksea
-</div>
+<div th:replace="nav :: navbar"></div>
 <div class="container">
   <div class="logo-container">
     <div class="logo">
@@ -206,18 +198,45 @@
       body: JSON.stringify({ email, password, nickname, name })
     });
 
-    if(response.ok){
+    if (response.ok) {
       alert("회원가입이 완료되었습니다. 다시 로그인해주세요.");
-      window.location.href="/login";
+      window.location.href = "/login";
+    } else if (response.status === 400) {
+      const errorResponse = await response.json(); // 응답 JSON 파싱
+      let message = "";
+
+      if (typeof errorResponse.message === "string") {
+        message = errorResponse.message;
+      } else if (typeof errorResponse === "object") {
+        for (const [field, errorMsg] of Object.entries(errorResponse)) {
+          message += `${errorMsg}\n`;
+        }
+      }
+
+      alert(message);
+    } else {
+      alert("서버 오류가 발생했습니다. 다시 시도해주세요.");
     }
 
-    window.location.href="/login";
+
+
   });
 
   // 닉네임 중복 확인 요청
   checkNicknameBtn.addEventListener("click",async()=>{
 
     const nickname = document.getElementById("nickname").value;
+
+    // 1차 유효성 검사: 길이 확인
+    if (nickname.length === 0) {
+      alert("닉네임을 입력해주세요.");
+      return;
+    }
+
+    if (nickname.length > 10) {
+      alert("닉네임은 10자 이하여야 합니다.");
+      return;
+    }
 
     const response = await fetch(`/check-nickname?nickname=${nickname}`,{
       method: "GET",
@@ -245,6 +264,13 @@
   emailVerifyBtn.addEventListener("click",async()=>{
 
     const email = document.getElementById("email").value;
+
+    // 1차 유효성 검사 : @gmail.com으로 끝나는지 확인
+    if(!email.endsWith("@gmail.com")){
+      alert("이메일은 @gmail.com으로 끝나야 합니다.")
+      return;
+    }
+
     emailVerifyBtn.disabled = true;
     emailVerifyBtn.textContent = "인증 요청 중...";
 
@@ -261,6 +287,15 @@
       emailVerifyBtn.disabled = false;
       emailVerifyBtn.textContent = "이메일 인증";
       alert(data.message);
+    }else if(response.status === 400) {
+      let message = "";
+
+      for (const [field, errorMsg] of Object.entries(data.data)) {
+        message += `${errorMsg}\n`;
+      }
+      emailVerifyBtn.disabled = false;
+      emailVerifyBtn.textContent = "이메일 인증";
+      alert(message)
     }else{
       emailVerifyBtn.disabled = false;
       emailVerifyBtn.textContent = "이메일 인증";

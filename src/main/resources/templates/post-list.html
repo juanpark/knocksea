@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>게시글 목록</title>
     <style>
@@ -7,13 +8,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             background-color: #f4f6f8;
-        }
-        .navbar {
-            background-color: #2196F3;
-            padding: 15px 30px;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
+            padding-top: 100px;
         }
         .container {
             max-width: 800px;
@@ -94,9 +89,18 @@
             text-decoration: underline;
         }
         .post-info {
+            display: flex;
+            justify-content: space-between;
             font-size: 14px;
             color: #777;
             margin-top: 8px;
+        }
+        .left-info {
+            display: flex;
+            gap: 10px;
+        }
+        .right-info {
+            white-space: nowrap;
         }
         .pagination {
             margin-top: 50px;
@@ -136,12 +140,11 @@
             margin-top: 50px;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/css/nav.css}">
 </head>
 <body>
 
-<div class="navbar">
-    knocksea
-</div>
+<div th:replace="nav :: navbar"></div>
 
 <div class="container">
     <h1>게시글 목록</h1>
@@ -169,26 +172,36 @@
             <span th:utext="${post.title}"></span>
         </a>
         <div class="post-info">
-            조회수: <span th:text="${post.viewCount}"></span>
+            <div class="left-info">
+                작성자: <span th:text="${post.userName}"></span> &nbsp; | &nbsp;
+                조회수: <span th:text="${post.viewCount}"></span>
+            </div>
+            <div class="right-info">
+                작성일: <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+            </div>
         </div>
     </div>
 
-    <div class="pagination">
+    <div class="pagination" th:with="safeKeyword=${keyword} != null ? ${keyword} : ''">
+
         <a th:if="${currentPage > 1}"
-           th:href="@{'/posts/page?page=' + (${currentPage} - 2) + '&keyword=' + ${keyword} + '&sort=' + ${sort}}">이전</a>
+           th:href="@{'/posts/page?page=' + (${currentPage} - 2) + '&keyword=' + ${safeKeyword} + '&sort=' + ${sort}}">이전</a>
 
         <span th:each="i : ${#numbers.sequence(1, totalPages)}">
+
             <a th:if="${i != currentPage}"
-               th:href="@{'/posts/page?page=' + (${i} - 1) + '&keyword=' + ${keyword} + '&sort=' + ${sort}}"
+               th:href="@{'/posts/page?page=' + (${i} - 1) + '&keyword=' + ${safeKeyword} + '&sort=' + ${sort}}"
                th:text="${i}"></a>
 
             <span th:if="${i == currentPage}"
                   th:text="${i}"
                   class="current-page"></span>
+
         </span>
 
         <a th:if="${currentPage < totalPages}"
-           th:href="@{'/posts/page?page=' + (${currentPage}) + '&keyword=' + ${keyword} + '&sort=' + ${sort}}">다음</a>
+           th:href="@{'/posts/page?page=' + (${currentPage}) + '&keyword=' + ${safeKeyword} + '&sort=' + ${sort}}">다음</a>
+
     </div>
 
 </div>

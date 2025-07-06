@@ -11,19 +11,26 @@ import com.board.dto.UserLogin;
 import com.board.dto.UserRegister;
 import com.board.service.MailService;
 import com.board.service.MemberService;
+import jakarta.validation.Valid;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -41,11 +48,11 @@ public class AuthController {
     return new ResponseEntity<>(!memberService.checkNickname(nickname), HttpStatus.OK);
   }
 
-  // 이메일 인증 코드 요청 (중복이메일 검증 후 인증코드 전송)
+  // 이메일 인증 코드 요청 (중복 이메일 검증 후 인증코드 전송)
   @PostMapping("/email-verification")
   @ResponseBody
   public ResponseEntity<MessageResponse> sendVerification(
-      @RequestBody EmailVerificationRequest emailVerificationRequest) {
+      @Valid @RequestBody EmailVerificationRequest emailVerificationRequest) {
     MessageResponse emailResponse;
     try {
       if (memberService.findByEmail(emailVerificationRequest.getEmail()) != null) {
@@ -93,31 +100,37 @@ public class AuthController {
   // 자체 로그인
   // POST /login
   @PostMapping("/login")
-  public String localLogin(@RequestParam String email,
-      @RequestParam String password, Model model) {
+  public String localLogin(@ModelAttribute @Valid UserLogin userLogin, BindingResult bindingResult,
+      RedirectAttributes redirectAttributes,Model model) {
 
-    JwtTokenResponse response = authService
-        .localLogin(UserLogin.builder().email(email).password(password).build());
+    if (bindingResult.hasErrors()) {
+      String errorMessage = bindingResult.getFieldErrors().stream()
+          .map(FieldError::getDefaultMessage)  // "이메일은 @gmail.com으로 끝나야 합니다." 만 추출
+          .collect(Collectors.joining("<br/>"));
+      redirectAttributes.addFlashAttribute("errors", errorMessage);
+      return "redirect:/login"; // 다시 로그인 페이지로
+    }
 
-    // 로그인 성공 후 localStorage에 token 저장 위한 token-handler.html 이동
-    // localStorage 설정 뒤 홈으로 자동 이동
-    model.addAttribute("accessToken", response.getAccessToken());
-    model.addAttribute("refreshToken", response.getRefreshToken());
-    return "token-handler";
+    try {
+      JwtTokenResponse response = authService.localLogin(userLogin);
+      model.addAttribute("accessToken", response.getAccessToken());
+      model.addAttribute("refreshToken", response.getRefreshToken());
+      return "token-handler";
+    } catch (BadCredentialsException e) {
+      log.info("Bad credentials");
+      redirectAttributes.addFlashAttribute("errors", "아이디 또는 비밀번호가 올바르지 않습니다.");
+      return "redirect:/login";
+    }
   }
 
-  // 자체 회원가입
+  // 이메일 회원가입
   // POST /register
   @PostMapping("/register")
   @ResponseBody
-  public ResponseEntity<String> localRegister(@RequestBody UserRegister userRegister) {
-    try {
+  public ResponseEntity<String> localRegister(@Valid @RequestBody UserRegister userRegister) {
       log.info("localRegister userRegister: {}", userRegister.toString());
       String email = authService.register(userRegister);
       return new ResponseEntity<>(email, HttpStatus.CREATED);
-    } catch (IllegalArgumentException e) {
-      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
   }
 
   // 자체 로그아웃

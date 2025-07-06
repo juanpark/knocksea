@@ -52,12 +52,29 @@ public class PostController {
         return "redirect:/posts/page";
     }
 
+    //조회수 증가
+    @PostMapping("/{id}/viewCount")
+    @ResponseBody
+    public ResponseEntity<Void> increaseViewCount(@PathVariable Long id) {
+        postService.increaseViewCount(id);
+        return ResponseEntity.ok().build();
+    }
+
     //게시글 상세 페이지
     @GetMapping("/{id}")
-    public String getPost(@PathVariable Long id, Model model) {
+    public String getPost(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         //해당 id를 조회 후 dto로 가공
         PostResponseDto post = postService.getPost(id);
         model.addAttribute("post", post);
+
+        // 로그인 사용자 id 추가 : 댓글 기능의 현재 로그인된 사용자 정보 필요
+//        Long currentUserId = (userDetails != null) ? userDetails.getMember().getId() : null;
+        Long currentUserId = 6L; // 디버깅용! 실제 배포 전에 제거해야 함!!!!
+        model.addAttribute("currentUserId", currentUserId);
+        // 확인
+//        System.out.println("확인 userDetails = " + userDetails);
+//        System.out.println("확인 currentUserId = " + currentUserId);
+
         return "post-detail";
     }
 
@@ -75,10 +92,9 @@ public class PostController {
                              @RequestBody PostRequestDto requestDto)
 
     {
-
         Long userId = getCurrentUserId();
         postService.updatePost(id, requestDto, userId);
-        return "redirect:/posts/" + id; //수정 후 상세 페이지로 리다이렉트
+        return "redirect:/posts/" + id + "?from=edit"; //수정 후 상세 페이지로 리다이렉트
     }
 
     //게시글 삭제 처리

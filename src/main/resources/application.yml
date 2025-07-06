@@ -51,5 +51,20 @@ kakao:
 google:
   secret: ${GOOGLE_MAP_KEY}
 
+
 image:
   secret: ${UNSPLASH_APP_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
