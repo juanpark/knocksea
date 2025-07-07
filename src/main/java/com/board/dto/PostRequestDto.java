@@ -12,6 +12,6 @@ public class PostRequestDto {
     private Long userId;
     private String title;
     private String content;
-    private List<Long> categoryIds;
-    private List<Long> tagIds;
+    private Long categoryId;
+    private List<String> tagNames;
 }
