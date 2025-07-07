@@ -11,6 +11,7 @@ import java.util.List;
 public class PostResponseDto {
 
     private Long postsId;
+    private Long userId; // 댓글 사용자 인증을 위해 추가
     private String userName;
     private String title;
     private String content;
@@ -18,7 +19,7 @@ public class PostResponseDto {
     private int dislikeCount;
     private String status;
     private int viewCount;
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> categoryNames;
     private List<String> tagNames;

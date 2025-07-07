@@ -62,7 +62,7 @@ public class AuthService {
   @Value("${kakao.redirect-uri}")
   private String redirectUri;
 
-  // 로컬 로그인
+  // 이메일 로그인
   @Transactional
   public JwtTokenResponse localLogin(UserLogin userLogin) {
     Authentication authentication = authenticationManager.authenticate(
@@ -71,14 +71,9 @@ public class AuthService {
     return createTokenAndSave(authentication, "로그인 완료");
   }
 
-  // 로컬 회원가입
+  // 이메일 회원가입
   @Transactional
   public String register(UserRegister userRegister) {
-    log.info("[AuthService] register");
-
-    if (memberRepository.findByEmail(userRegister.getEmail()).isPresent()) {
-      throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
-    }
     Member member = Member.builder()
         .name(userRegister.getName())
         .nickname(userRegister.getNickname())
@@ -95,10 +90,9 @@ public class AuthService {
   // 로그아웃 시 RefreshToken 삭제
   @Transactional
   public MessageResponse removeRefreshToken(String email) {
-    log.info("[AuthService] removeRefreshToken email: {}", email);
     Member member = memberRepository.findByEmail(email)
         .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
-    log.info("[AuthService] removeRefreshToken userId: {}", member.getId());
+
     tokenRepository.deleteByMemberId(member.getId());
     return MessageResponse.builder().message("로그아웃 완료").build();
   }
@@ -113,7 +107,6 @@ public class AuthService {
     }
 
     String email = jwtTokenProvider.extractEmail(refreshToken);
-    log.info("[AuthService] reissueAccessToken email: {}", email);
 
     // 저장된 RefreshToken과 일치하는 지 확인
     Member member = memberRepository.findByEmail(email)

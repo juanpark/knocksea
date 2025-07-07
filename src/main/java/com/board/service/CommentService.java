@@ -6,6 +6,9 @@ import com.board.domain.Member;
 import com.board.dto.CommentCreateRequest;
 import com.board.dto.CommentUpdateRequest;
 import com.board.dto.CommentResponse;
+import com.board.exception.CommentNotFoundException;
+import com.board.exception.UnauthorizedCommentAccessException;
+import com.board.exception.UnauthorizedCommentAdoptException;
 import com.board.repository.CommentRepository;
 import com.board.repository.PostRepository;
 import com.board.repository.MemberRepository;
@@ -13,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,27 +54,67 @@ public class CommentService {
     }
 
     // 댓글 수정
-    public void updateComment(Long commentId, CommentUpdateRequest request) {
+    /*public void updateComment(Long commentId, CommentUpdateRequest request, Long currentUserId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+
+        // 로그인한 사용자와 댓글 작성자가 일치하는지 확인
+        if (!comment.getMember().getId().equals(currentUserId)) {
+            throw new SecurityException("해당 댓글을 수정할 권한이 없습니다.");
+        }
+
         comment.setContent(request.getContent());
         comment.setUpdatedAt(java.time.LocalDateTime.now());
+    }*/
+    public void updateComment(Long commentId, CommentUpdateRequest request, Long userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(CommentNotFoundException::new);
+
+        if (!comment.getMember().getId().equals(userId)) {
+            throw new UnauthorizedCommentAccessException(); // 본인만 수정 가능
+        }
+
+        comment.setContent(request.getContent());
+        comment.setUpdatedAt(LocalDateTime.now());
     }
 
     // 댓글 삭제
-    public void deleteComment(Long commentId) {
-        if (!commentRepository.existsById(commentId)) {
-            throw new IllegalArgumentException("댓글이 존재하지 않습니다.");
+    /*public void deleteComment(Long commentId, Long currentUserId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+
+        // 로그인한 사용자와 댓글 작성자가 일치하는지 확인
+        if (!comment.getMember().getId().equals(currentUserId)) {
+            throw new SecurityException("해당 댓글을 삭제할 권한이 없습니다.");
         }
-        commentRepository.deleteById(commentId);
+
+        commentRepository.delete(comment);
+    }*/
+    public void deleteComment(Long commentId, Long userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(CommentNotFoundException::new);
+
+        if (!comment.getMember().getId().equals(userId)) {
+            throw new UnauthorizedCommentAccessException(); // 본인만 삭제 가능
+        }
+
+        commentRepository.delete(comment);
     }
 
     // 댓글 채택
-    public void adoptComment(Long commentId) {
+    public void adoptComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+                .orElseThrow(CommentNotFoundException::new);
+
+        Post post = comment.getPost();
+
+        // 게시글 작성자와 현재 로그인 사용자가 일치하는지 확인
+        if (!post.getMember().getId().equals(userId)) {
+            throw new UnauthorizedCommentAdoptException(); // 채택 권한 없음
+        }
+
         comment.setAnswer(true); // 채택된 댓글 표시
-        comment.getPost().setStatus(Post.Status.ADOPTED); // 게시글 상태 변경
+        post.setStatus(Post.Status.ADOPTED); // 게시글 상태 변경
     }
 
     // 게시글 ID로 최상위 댓글 목록 조회

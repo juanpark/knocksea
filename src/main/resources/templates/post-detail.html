@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
-    <meta charset="UTF-8" />
     <title>게시글 상세</title>
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
         background-color: #f4f6f8;
-      }
-
-      .navbar {
-        background-color: #2196f3;
-        padding: 15px 30px;
-        color: white;
-        font-size: 24px;
-        font-weight: bold;
+        padding-top: 100px;
       }
 
       .container {
         max-width: 800px;
         margin: 30px auto;
         padding: 0 20px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
       }
 
       .status-badge {
@@ -52,10 +53,40 @@
         color: #757474;
       }
 
-      .post-meta {
+      .post-meta-box {
+        background-color: #f9f9f9;
+        padding: 15px 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #555;
         display: flex;
-        justify-content: flex-end;
-        color: #afadad;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .left-info {
+        display: flex;
+        gap: 30px;
+      }
+
+      .right-info {
+        white-space: nowrap;
+      }
+
+      .post-content-box {
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 6px;
+        margin-bottom: 30px;
+        background-color: #fff;
+      }
+
+      .post-content {
+        font-size: 16px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        color: #333;
       }
 
       .tag {
@@ -69,13 +100,15 @@
         margin-bottom: 1rem;
       }
 
+      /* 버튼 스타일 */
       .button-group {
         display: flex;
         gap: 10px;
-        margin-top: 20px;
+        margin-bottom: 20px;
       }
 
       .btn {
+        display: inline-block;
         padding: 10px 15px;
         border: none;
         border-radius: 4px;
@@ -83,8 +116,9 @@
         color: white;
         cursor: pointer;
         text-decoration: none;
-        font-weight: bold;
+        text-align: center;
         transition: background-color 0.2s;
+        font-weight: bold;
       }
 
       .btn:hover {
@@ -99,9 +133,9 @@
         background-color: #e53935;
       }
 
+      /* 목록 버튼 */
       .back-link {
         display: inline-block;
-        margin-top: 20px;
         color: #2196f3;
         text-decoration: none;
         font-weight: bold;
@@ -111,55 +145,55 @@
         text-decoration: underline;
       }
 
-      .comment-header {
-        display: flex;
-        align-items: center;
-        margin-top: 2rem;
-      }
-
-      .comment-check {
-        background-color: #1c9f3f;
-        border-radius: 50%;
-        padding: 0 0.5rem;
+      /*   댓글 css  */
+      /* 공통 버튼 스타일 */
+      .comment-btn {
+        padding: 6px 12px;
+        margin-right: 5px;
+        font-size: 13px;
+        font-weight: 600;
         color: white;
-        font-size: 1.3rem;
-        margin-right: 0.5rem;
-      }
-
-      .comment-meta {
-        color: #6c6666;
-        font-size: 0.7rem;
-        margin-left: 1rem;
-      }
-
-      .comment-content {
-        margin-top: 0.5rem;
-        font-size: 1.2rem;
-      }
-
-      .comment-form {
-        display: flex;
-        margin-top: 3rem;
-        align-items: center;
-      }
-
-      .comment-form textarea {
-        background-color: #d1d1d1;
-        border-radius: 10px;
+        background-color: #2196f3;
         border: none;
-        width: 90%;
-        height: 120px;
-        resize: vertical;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
       }
 
-      .comment-submit {
-        margin-left: 1rem;
+      /* 호버 효과 */
+      .comment-btn:hover {
+        background-color: #1976d2;
+      }
+
+      /* 채택 버튼은 초록색 */
+      .adopt-btn {
+        background-color: #4caf50;
+      }
+      .adopt-btn:hover {
+        background-color: #388e3c;
+      }
+
+      /* 삭제 버튼은 빨간색 */
+      .delete-btn {
+        background-color: #f44336;
+      }
+      .delete-btn:hover {
+        background-color: #d32f2f;
+      }
+
+      /* 채택 표시 */
+      .adopted-label {
+        margin-left: 8px;
+        color: green;
+        font-weight: bold;
       }
     </style>
+
+    <link rel="stylesheet" th:href="@{/css/nav.css}" />
   </head>
 
   <body>
-    <div class="navbar">knocksea</div>
+    <div th:replace="nav :: navbar"></div>
 
     <div class="container">
       <!-- 게시글 헤더 -->
@@ -183,92 +217,124 @@
         </div>
       </div>
 
-      <hr />
-
-      <div class="post-meta">
-        조회수: <span th:text="${post.viewCount}">0</span>
+      <!-- 작성자 / 조회수 / 작성일 or 수정일 구역 -->
+      <div class="post-meta-box">
+        <div class="left-info">
+          <div>작성자: <span th:text="${post.userName}">작성자</span></div>
+          <div>조회수: <span th:text="${post.viewCount}"></span></div>
+        </div>
+        <div class="right-info">
+          <!-- 수정한 경우: 수정일만 출력 -->
+          <div
+            th:if="${post.updatedAt != null and post.updatedAt != post.createdAt}"
+          >
+            수정일:
+            <span
+              th:text="${#temporals.format(post.updatedAt, 'yyyy-MM-dd HH:mm')}"
+            ></span>
+          </div>
+          <!-- 수정 안 한 경우: 작성일 출력 -->
+          <div
+            th:if="${post.updatedAt == null or post.updatedAt == post.createdAt}"
+          >
+            작성일:
+            <span
+              th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"
+            ></span>
+          </div>
+        </div>
       </div>
 
-      <p th:text="${post.content}">게시글 내용</p>
+      <!-- 본문 구역 -->
+      <div class="post-content-box">
+        <div class="post-content" th:text="${post.content}">게시글 내용</div>
+      </div>
 
       <!-- 태그 목록 -->
       <div>
-        <span
-          class="tag"
-          th:each="tag : ${post.tagNames}"
-          th:text="${tag}"
+        <span class="tag" th:each="tag : ${post.tagNames}" th:text="${tag}"
           >태그명</span
         >
       </div>
 
-      <!-- 버튼 그룹 -->
+      <!-- 수정, 삭제 버튼 -->
       <div class="button-group">
         <a th:href="@{/posts/{id}/edit(id=${post.postsId})}" class="btn"
           >수정하기</a
         >
         <a
           href="#"
+          th:onclick="|deletePost(${post.postsId})|"
           class="btn btn-delete"
-          th:onclick="'if(confirm(\'글을 삭제하시겠습니까?\')) { document.getElementById(\'deleteForm\').submit(); } return false;'"
+          >삭제하기</a
         >
-          삭제하기
-        </a>
-        <form
-          id="deleteForm"
-          th:action="@{/posts/{id}/delete(id=${post.postsId})}"
-          method="post"
-          style="display: none"
-        ></form>
       </div>
 
-      <a th:href="@{/posts/page}" class="back-link">← 목록으로</a>
+      <!-- 게시글 ID, 작성자 ID (백엔드에서 전달) -->
+      <input type="hidden" id="postId" th:value="${post.postsId}" />
+      <input type="hidden" id="postOwnerId" th:value="${post.userId}" />
+      <input type="hidden" id="currentUserId" th:value="${currentUserId}" />
 
-      <!-- 댓글 목록 -->
-      <div th:each="comment : ${comments}">
-        <div class="comment-header">
-          <div class="comment-check">✓</div>
-          <div th:text="${comment.member}">작성자</div>
-          <div
-            class="comment-meta"
-            th:text="${#temporals.format(comment.createAt, 'yyyy-MM-dd HH:mm')}"
-          >
-            날짜
-          </div>
-        </div>
-        <div class="comment-content" th:text="${comment.content}">
-          댓글 내용
-        </div>
+      <!-- 댓글 영역 시작 -->
+      <div id="comment-container">
+        <h3>댓글</h3>
 
-        <!-- 게시글 작성자일 경우 채택 버튼 표시 -->
-        <div th:if="${isAuthor} and ${post.status} == 'COMPLETED'">
-          <form
-            th:action="@{/api/comments/{commentId}/adopt}"
-            method="post"
-            style="margin-top: 0.5rem"
-          >
-            <button type="submit" class="btn">이 댓글 채택하기</button>
-          </form>
-        </div>
-      </div>
-
-      <!-- 댓글 작성 폼 -->
-      <div class="comment-form">
-        <form
-          th:action="@{/api/comments}"
-          method="post"
-          style="display: flex; width: 100%"
-        >
+        <div>
           <textarea
-            name="content"
-            placeholder="댓글을 입력하세요..."
+            id="newCommentContent"
+            rows="3"
+            style="width: 100%"
           ></textarea>
-          <div class="comment-submit">
-            <button type="submit" class="btn" style="border-radius: 10px">
-              작성
-            </button>
-          </div>
-        </form>
+          <button onclick="submitComment()" class="comment-btn">
+            댓글 작성
+          </button>
+        </div>
+
+        <div id="comments-container"></div>
       </div>
+      <!-- 댓글 영역 끝 -->
+
+      <!-- 목록으로 -->
+      <a th:href="@{/posts/page}" class="back-link">목록으로</a>
     </div>
+
+    <!-- 댓글 관련 자바스크립트 분리 파일 import -->
+    <script src="/js/post-detail.js"></script>
+    <script th:inline="javascript">
+      window.addEventListener("DOMContentLoaded", () => {
+        let postId = [[${post.postsId}]];
+        let urlParams = new URL(window.location.href);
+
+        if (urlParams.searchParams.get('from') === 'edit') {
+          return;
+        }
+
+        fetch('/posts/' + postId + '/viewCount', {
+          method: 'POST'
+        });
+      });
+
+      function deletePost(postId) {
+        if (!confirm('글을 삭제하시겠습니까?')) {
+          return;
+        }
+
+        const token = localStorage.getItem('accessToken');
+
+        fetch('/posts/' + postId + '/delete', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            window.location.replace('/posts/page');
+          } else {
+            alert('글 삭제 실패!');
+          }
+        });
+      }
+    </script>
   </body>
 </html>

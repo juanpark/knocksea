@@ -36,7 +36,7 @@ public class Post {
     @Enumerated(EnumType.STRING)
     private Status status = Status.WAITING; //기본 값
 
-    private LocalDateTime createAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt = LocalDateTime.now();
 

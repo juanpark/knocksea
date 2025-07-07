@@ -7,13 +7,7 @@
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
         background-color: #f4f6f8;
-      }
-      .navbar {
-        background-color: #2196f3;
-        padding: 15px 30px;
-        color: white;
-        font-size: 24px;
-        font-weight: bold;
+        padding-top: 100px;
       }
       .container {
         max-width: 800px;
@@ -75,15 +69,19 @@
         text-decoration: underline;
       }
     </style>
+    <link rel="stylesheet" th:href="@{/css/nav.css}" />
   </head>
   <body>
-    <div class="navbar">knocksea</div>
+    <div th:replace="nav :: navbar"></div>
 
     <div class="container">
       <h1>게시글 수정</h1>
-
       <div class="form-card">
-        <form id="editForm">
+        <form
+          id="editForm"
+          method="post"
+          th:action="@{/posts/{id}/edit (id=${post.postsId})}"
+        >
           <label for="title">제목:</label>
           <input
             type="text"
@@ -171,7 +169,6 @@
           })
           .then(response => {
               if (response.ok) {
-                  alert('글 수정 성공!');
                   window.location.href = '/posts/' + postId + '?from=edit';
               } else {
                   alert('글 수정 실패!');
