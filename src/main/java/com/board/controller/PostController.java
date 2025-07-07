@@ -66,19 +66,48 @@ public class PostController {
     }
 
     //게시글 상세 페이지
+//    @GetMapping("/{id}")
+//    public String getPost(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+//        //해당 id를 조회 후 dto로 가공
+//        PostResponseDto post = postService.getPost(id);
+//        model.addAttribute("post", post);
+//
+//        // ✅ SecurityContextHolder로 로그인 사용자 꺼내기
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//
+//        // 로그인 사용자 id 추가 : 댓글 기능의 현재 로그인된 사용자 정보 필요
+//        // Long currentUserId = 6L; // 디버깅용! 실제 배포 전에 제거해야 함!!!!
+//        Long currentUserId = (userDetails != null) ? userDetails.getMember().getId() : null;
+//
+//        if (authentication != null && authentication.isAuthenticated()) {
+//            Object principal = authentication.getPrincipal();
+//            if (principal instanceof CustomUserDetails) {
+//                currentUserId = ((CustomUserDetails) principal).getMember().getId();
+//            }
+//        }
+//
+//        model.addAttribute("currentUserId", currentUserId);
+//
+//        return "post-detail";
+//    }
     @GetMapping("/{id}")
-    public String getPost(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        //해당 id를 조회 후 dto로 가공
+    public String getPost(@PathVariable Long id, Model model) {
         PostResponseDto post = postService.getPost(id);
         model.addAttribute("post", post);
 
-        // 로그인 사용자 id 추가 : 댓글 기능의 현재 로그인된 사용자 정보 필요
-//        Long currentUserId = (userDetails != null) ? userDetails.getMember().getId() : null;
-        Long currentUserId = 6L; // 디버깅용! 실제 배포 전에 제거해야 함!!!!
+        // SecurityContextHolder로 로그인 사용자 꺼내기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long currentUserId = null;
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof CustomUserDetails) {
+                currentUserId = ((CustomUserDetails) principal).getMember().getId();
+            }
+        }
+
         model.addAttribute("currentUserId", currentUserId);
-        // 확인
-//        System.out.println("확인 userDetails = " + userDetails);
-//        System.out.println("확인 currentUserId = " + currentUserId);
+        System.out.println("✅ currentUserId = " + currentUserId);
 
         return "post-detail";
     }
@@ -113,10 +142,11 @@ public class PostController {
         return ResponseEntity.ok("삭제 성공");
     }
 
-    //페이징 조회 → URL 변경, 검색어 기능 추가, 정렬 기능 추가
+    //페이징 조회 → URL 변경, 검색어 기능 추가, 정렬 기능 추가, 카테고리 기능 추가
     @GetMapping("/page")
     public String getPostList(@RequestParam(defaultValue = "0") int page,
                               @RequestParam(required = false) String keyword,
+                              @RequestParam(required = false) String categoryName,
                               @RequestParam(defaultValue = "recent") String sort,
                               Model model)
     {
@@ -130,6 +160,8 @@ public class PostController {
         //검색어 있으면 검색 결과 페이지 조회
         if (keyword != null && !keyword.isEmpty()) {
             posts = postService.searchPostsByKeyword(keyword, page, pageSize, sort);
+        } else if(categoryName != null && !categoryName.isEmpty()) {
+        	posts = postService.getPostsByCategory(categoryName, page, pageSize, sort);
         } else {
             posts = postService.getPostsByPage(page, pageSize, sort);
         }
@@ -144,6 +176,7 @@ public class PostController {
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("keyword", keyword); //검색어
         model.addAttribute("sort", sort); //정렬
+        model.addAttribute("categoryName", categoryName);
 
         return "post-list";
     }
@@ -175,26 +208,6 @@ public class PostController {
         }
 
         throw new RuntimeException("로그인이 필요합니다.");
-    }
-
-    // 카테고리, 태그, 상태로 검색
-    @GetMapping
-    public ResponseEntity<List<Post>> getPosts(
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) Long tagId,
-            @RequestParam(required = false) Post.Status status
-    ) {
-        return ResponseEntity.ok(postService.searchPosts(categoryId, tagId, status));
-    }
-
-    // 질문상태 업데이트
-    @PatchMapping("/{postId}/status")
-    public String updateStatus(
-            @PathVariable Long postId,
-            @RequestParam Post.Status status
-    ) {
-        postService.updateStatus(postId, status);
-        return "redirect:/post-detail";
     }
 
     //map 관련 메서드

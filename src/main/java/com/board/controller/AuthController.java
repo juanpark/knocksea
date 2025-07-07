@@ -2,6 +2,7 @@ package com.board.controller;
 
 import com.board.auth.service.AuthService;
 import com.board.auth.CustomUserDetails;
+import com.board.domain.Member;
 import com.board.dto.EmailCodeVerificationRequest;
 import com.board.dto.EmailVerificationRequest;
 import com.board.dto.JwtTokenRequest;
@@ -12,13 +13,18 @@ import com.board.dto.UserRegister;
 import com.board.service.MailService;
 import com.board.service.MemberService;
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -139,4 +145,42 @@ public class AuthController {
     JwtTokenResponse response = authService.reissueAccessToken(jwtTokenRequest);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
+
+  // JS에서 사용자 정보 API 요청 후 처리할 수 있도록
+//    @GetMapping("/api/auth/me")
+//    public ResponseEntity<Map<String, Object>> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+//      if (userDetails == null) {
+//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//      }
+//
+//      Map<String, Object> userInfo = new HashMap<>();
+//      userInfo.put("userId", userDetails.getMember().getId());
+//      userInfo.put("nickname", userDetails.getMember().getNickname());
+//      return ResponseEntity.ok(userInfo);
+//    }
+  @GetMapping("/api/auth/me")
+  public ResponseEntity<?> getCurrentUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    if (authentication == null || !authentication.isAuthenticated()) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
+    }
+
+    Object principal = authentication.getPrincipal();
+    if (!(principal instanceof CustomUserDetails)) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("유효하지 않은 사용자");
+    }
+
+    Member member = ((CustomUserDetails) principal).getMember();
+    if (member == null) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("❌ 사용자 정보가 존재하지 않습니다.");
+    }
+
+    Map<String, Object> result = new HashMap<>();
+    result.put("userId", member.getId());
+    result.put("nickname", member.getNickname());
+    return ResponseEntity.ok(result);
+  }
+
+
 }
