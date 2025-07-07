@@ -51,6 +51,8 @@ kakao:
 google:
   secret: ${GOOGLE_MAP_KEY}
 
+server:
+  forward-headers-strategy: framework
 
 image:
   secret: ${UNSPLASH_APP_KEY}
