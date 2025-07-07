@@ -378,7 +378,7 @@
           const commentEl = buildCommentElement(comment);
           container.appendChild(commentEl);
         });
-
+      }
       likeButton.addEventListener("click", async() => {
         vote('POST', postId, 'LIKE');
       });
@@ -388,10 +388,12 @@
       });
 
 
+
       function deletePost(postId) {
         if (!confirm('글을 삭제하시겠습니까?')) {
           return;
 
+        }
       }
 
       function buildCommentElement(comment, isChild = false) {
@@ -630,9 +632,9 @@
           });
         }
         
-        fetch('/posts/' + postId + '/viewCount', {
-          method: 'POST'
-        });
+        // fetch('/posts/' + postId + '/viewCount', {
+        //   method: 'POST'
+        // });
 
         fetchVoteCounts();
         fetchUserVote();
