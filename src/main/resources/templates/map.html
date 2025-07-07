@@ -312,8 +312,20 @@
         fishingSpots = data;
         displayedSpots = data;
         renderMarkers(); // 지도 생성 이후 마커 렌더링
+        loadRandomSpotInfo();
       })
       .catch(err => console.error('낚시터 데이터 로딩 실패:', err));
+  }
+
+  // 초기 화면 로딩 시 낚시터 랜덤 설정
+  function loadRandomSpotInfo() {
+    if (fishingSpots.length === 0) return;
+
+    const randomIndex = Math.floor(Math.random() * fishingSpots.length);
+    const randomSpot = fishingSpots[randomIndex];
+
+    loadFishingSpot(randomSpot);
+    loadSpotImage();
   }
 
   // 사이드 패널 토글 버튼 열림, 닫힘 함수
@@ -380,7 +392,7 @@
           .catch(err => console.error('게시글 로딩 실패:', err));
   }
 
-  // 지역에 따라 마커 필터링
+  // 지역에 따라 마커 필터링 함수
   function renderMarkers() {
       console.log('현재 마커:', displayedSpots);
       // 구글맵 주석 유지
@@ -403,18 +415,8 @@
 
           marker.addListener("click", () => {
               loadFishingSpot(spot);
-              fetch('/map/spot-image')
-                  .then(res => res.json())
-                  .then(data => {
-                      const imageUrl = data.imageUrl;
-                      const imgElement = document.getElementById("spotImage").querySelector("img");
-                      imgElement.src = imageUrl;
-                  })
-                      .catch(err => {
-                        console.error(err);
-                        document.getElementById("spotImage").querySelector("img").src = "https://placehold.co/600x400";
-                      });
-                openSidePanel();
+              loadSpotImage()
+              openSidePanel();
           });
 
           markers.push(marker); // 새로 추가된 마커 저장
@@ -422,6 +424,7 @@
     });
   }
 
+  // 지역 선택 함수
   function filterMarkersByRegion() {
       const selectedRegion = document.getElementById('regionSelect').value;
 
@@ -434,6 +437,23 @@
       renderMarkers();
       console.log('선택한 지역:', selectedRegion);
       console.log('필터링된 데이터:', displayedSpots);
+  }
+
+  // 낚시터 이미지 호출 함수
+  function loadSpotImage(){
+    fetch('/map/spot-image')
+    .then(res => res.json())
+    .then(data => {
+      const imageUrl = data.imageUrl;
+      const imgElement = document.getElementById("spotImage").querySelector("img");
+      imgElement.src = imageUrl;
+    })
+    .catch(err => {
+      console.error('이미지 불러오기 실패:', err);
+      const imgElement = document.getElementById("spotImage").querySelector("img");
+      imgElement.src = "https://placehold.co/600x400";
+    });
+
   }
 
   window.onload = function () {
