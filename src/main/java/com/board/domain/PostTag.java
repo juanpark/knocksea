@@ -7,16 +7,18 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Table(name = "posts_tags")
 public class PostTag {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+	@EmbeddedId
+    private PostTagId id;
+	
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
+    @MapsId("postsId")
+    @JoinColumn(name = "posts_id")
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("tagId")
     @JoinColumn(name = "tag_id")
     private Tag tag;
 }

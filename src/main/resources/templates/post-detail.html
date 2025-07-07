@@ -177,7 +177,7 @@
         <div
           class="category"
           th:each="category : ${post.categoryNames}"
-          th:text="${category.name}"
+          th:text="${category}"
         >
           카테고리
         </div>
@@ -193,7 +193,10 @@
 
       <!-- 태그 목록 -->
       <div>
-        <span class="tag" th:each="tag : ${post.tagNames}" th:text="${tag.name}"
+        <span
+          class="tag"
+          th:each="tag : ${post.tagNames}"
+          th:text="${tag}"
           >태그명</span
         >
       </div>
@@ -251,7 +254,7 @@
       <!-- 댓글 작성 폼 -->
       <div class="comment-form">
         <form
-          th:action="@{api/comments}"
+          th:action="@{/api/comments}"
           method="post"
           style="display: flex; width: 100%"
         >

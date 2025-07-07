@@ -77,7 +77,9 @@ public class PostController {
     @GetMapping("/{id}/edit")
     public String editPostForm(@PathVariable Long id, Model model) {
         PostResponseDto post = postService.getPost(id);
+        List<Category> categories = categoryService.findAll();
         model.addAttribute("post", post);
+        model.addAttribute("categories", categories);
         return "post-edit";
     }
 
