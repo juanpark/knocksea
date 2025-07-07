@@ -10,7 +10,9 @@ import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
 import com.board.repository.CategoryRepository;
 import com.board.repository.MemberRepository;
+import com.board.repository.PostCategoryRepository;
 import com.board.repository.PostRepository;
+import com.board.repository.PostTagRepository;
 import com.board.repository.TagRepository;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
@@ -50,20 +52,29 @@ public class PostService {
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
 
-     // 중간 테이블: PostCategory
+        //유저 검증
+        Member member = memberRepository.findById(currentUserId)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+
+        post.setMember(member); //작성자 저장
+
+        postRepository.save(post);
+        
+        // 중간 테이블: PostCategory
         if (requestDto.getCategoryId() != null) {
             Category category = categoryRepo.findById(requestDto.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
             PostCategory postCategory = new PostCategory();
             postCategory.setPost(post);
             postCategory.setCategory(category);
+            
             post.getPostCategories().add(postCategory);
+            category.getPostCategories().add(postCategory);
         }
 
         // 중간 테이블: PostTag
         if (requestDto.getTagNames() != null && !requestDto.getTagNames().isEmpty()) {
-        	List<Tag> tags = new ArrayList<>();
-            for (String tagName : requestDto.getTagNames()) {
+        	for (String tagName : requestDto.getTagNames()) {
                 // 중복 태그 방지
                 Tag tag = tagRepo.findByName(tagName)
                 		.orElseGet(() -> tagRepo.save(new Tag(tagName)));
@@ -71,18 +82,13 @@ public class PostService {
                 PostTag postTag = new PostTag();
                 postTag.setPost(post);
                 postTag.setTag(tag);
+                
                 post.getPostTags().add(postTag);
+                tag.getPostTags().add(postTag);
             }
         }
-
-        //유저 검증
-        Member member = memberRepository.findById(currentUserId)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
-
-        post.setMember(member); //작성자 저장
-
-        Post savedPost = postRepository.save(post);
-        return savedPost.getPostsId();
+        
+        return post.getPostsId();
     }
 
     //조회수 증가 (getPost에서 로직 분리)
@@ -130,6 +136,38 @@ public class PostService {
 
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
+        
+        // ===== 카테고리 수정 =====
+        post.getPostCategories().clear(); // 기존 관계 제거
+        
+        if (requestDto.getCategoryId() != null) {
+            Category category = categoryRepo.findById(requestDto.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+            PostCategory postCategory = new PostCategory();
+            postCategory.setPost(post);
+            postCategory.setCategory(category);
+            
+            post.getPostCategories().add(postCategory);
+            category.getPostCategories().add(postCategory);
+        }
+
+        // ===== 태그 수정 =====
+        post.getPostTags().clear(); // 기존 태그 관계 제거
+        
+        if (requestDto.getTagNames() != null && !requestDto.getTagNames().isEmpty()) {
+        	for (String tagName : requestDto.getTagNames()) {
+                // 중복 태그 방지
+                Tag tag = tagRepo.findByName(tagName)
+                		.orElseGet(() -> tagRepo.save(new Tag(tagName)));
+
+                PostTag postTag = new PostTag();
+                postTag.setPost(post);
+                postTag.setTag(tag);
+                
+                post.getPostTags().add(postTag);
+                tag.getPostTags().add(postTag);
+            }
+        }
 
         return convertToResponseDto(post);
     }
