@@ -1,11 +1,6 @@
 package com.board.service;
 
-import com.board.domain.Category;
-import com.board.domain.Member;
-import com.board.domain.Post;
-import com.board.domain.PostCategory;
-import com.board.domain.PostTag;
-import com.board.domain.Tag;
+import com.board.domain.*;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
 import com.board.repository.*;
@@ -38,6 +33,8 @@ public class PostService {
     private final TagRepository tagRepo;
     private final MemberRepository memberRepository;
     private final CommentRepository commentRepository;
+    private final PostTagRepository postTagRepository;
+    private final PostCategoryRepository postCategoryRepository;
 
     //게시글 저장
     @Transactional
@@ -48,42 +45,47 @@ public class PostService {
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
 
-        //유저 검증
+        // 유저 검증
         Member member = memberRepository.findById(currentUserId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
 
-        post.setMember(member); //작성자 저장
+        post.setMember(member); // 작성자 저장
 
         postRepository.save(post);
-        
+
         // 중간 테이블: PostCategory
         if (requestDto.getCategoryId() != null) {
             Category category = categoryRepo.findById(requestDto.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+
             PostCategory postCategory = new PostCategory();
             postCategory.setPost(post);
             postCategory.setCategory(category);
-            
+
             post.getPostCategories().add(postCategory);
             category.getPostCategories().add(postCategory);
         }
 
         // 중간 테이블: PostTag
         if (requestDto.getTagNames() != null && !requestDto.getTagNames().isEmpty()) {
-        	for (String tagName : requestDto.getTagNames()) {
-                // 중복 태그 방지
+            for (String tagName : requestDto.getTagNames()) {
                 Tag tag = tagRepo.findByName(tagName)
-                		.orElseGet(() -> tagRepo.save(new Tag(tagName)));
+                        .orElseGet(() -> tagRepo.save(new Tag(tagName)));
+
+                PostTagId postTagId = new PostTagId();
+                postTagId.setPostsId(post.getPostsId());
+                postTagId.setTagId(tag.getId());
 
                 PostTag postTag = new PostTag();
+                postTag.setId(postTagId);
                 postTag.setPost(post);
                 postTag.setTag(tag);
-                
+
                 post.getPostTags().add(postTag);
                 tag.getPostTags().add(postTag);
             }
         }
-        
+
         return post.getPostsId();
     }
 
@@ -137,38 +139,45 @@ public class PostService {
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
         
-        // ===== 카테고리 수정 =====
-        post.getPostCategories().clear(); // 기존 관계 제거
-        
+        //===== 카테고리 수정 =====
+        postCategoryRepository.deleteAllByPost(post);
+        post.getPostCategories().clear(); // 메모리에서도 삭제
+
         if (requestDto.getCategoryId() != null) {
             Category category = categoryRepo.findById(requestDto.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+
             PostCategory postCategory = new PostCategory();
             postCategory.setPost(post);
             postCategory.setCategory(category);
-            
+
             post.getPostCategories().add(postCategory);
             category.getPostCategories().add(postCategory);
         }
 
-        // ===== 태그 수정 =====
-        post.getPostTags().clear(); // 기존 태그 관계 제거
-        
+        //===== 태그 수정 =====
+        //기존 태그 DB에서 삭제
+        postTagRepository.deleteAllByPost(post);
+        post.getPostTags().clear();
+
         if (requestDto.getTagNames() != null && !requestDto.getTagNames().isEmpty()) {
-        	for (String tagName : requestDto.getTagNames()) {
-                // 중복 태그 방지
+            for (String tagName : requestDto.getTagNames()) {
                 Tag tag = tagRepo.findByName(tagName)
-                		.orElseGet(() -> tagRepo.save(new Tag(tagName)));
+                        .orElseGet(() -> tagRepo.save(new Tag(tagName)));
+
+                PostTagId postTagId = new PostTagId();
+                postTagId.setPostsId(post.getPostsId());
+                postTagId.setTagId(tag.getId());
 
                 PostTag postTag = new PostTag();
+                postTag.setId(postTagId);
                 postTag.setPost(post);
                 postTag.setTag(tag);
-                
+
                 post.getPostTags().add(postTag);
                 tag.getPostTags().add(postTag);
             }
         }
-
         return convertToResponseDto(post);
     }
 
