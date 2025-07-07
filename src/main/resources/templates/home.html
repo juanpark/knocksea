@@ -1,46 +1,110 @@
-<!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Home</title>
+  <title>홈</title>
+
+  <section layout:fragment="styles">
+    <style>
+      .landing-container {
+          min-height: 100vh;
+          margin: 0;
+          padding-top: 4rem;
+          font-family: 'Noto Sans KR', sans-serif;
+          background: linear-gradient(to bottom, hsl(210, 100%, 8%), hsl(210, 50%, 12%), hsl(210, 45%, 20%));
+          color: #e0e9f0;
+          position: relative;
+          overflow-x: hidden;
+          text-align: center;
+      }
+      .bobbing {
+          display: inline-block;
+          animation: bob 3s ease-in-out infinite;
+      }
+      @keyframes bob {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+      }
+      .gradient {
+          background: linear-gradient(to right, hsl(200, 100%, 70%), hsl(200, 90%, 85%), hsl(200, 80%, 75%));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          font-weight: 800;
+          font-size: 4rem;
+      }
+      .korean-title {
+          font-family: 'Gowun Dodum', sans-serif;
+          color: hsl(200, 90%, 70%);
+          font-size: 2.5rem;
+          margin-top: 1rem;
+      }
+      .subtitle {
+          font-family: 'Gowun Dodum', sans-serif;
+          color: hsl(200, 80%, 80%);
+          font-size: 1.25rem;
+      }
+      .ocean {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          overflow: hidden;
+          height: 200px;
+          z-index: 1;
+      }
+      .ocean svg {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          animation: waveMotion 6s ease-in-out infinite alternate;
+      }
+      @keyframes waveMotion {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50px); }
+      }
+      .float-dot {
+          position: absolute;
+          border-radius: 50%;
+          background-color: hsl(200, 100%, 85%);
+          opacity: 0.5;
+          animation: float 6s ease-in-out infinite;
+      }
+      .dot1 { width: 8px; height: 8px; top: 120px; left: 10%; }
+      .dot2 { width: 6px; height: 6px; top: 160px; right: 15%; animation-delay: 2s; }
+      .dot3 { width: 4px; height: 4px; top: 200px; left: 30%; animation-delay: 4s; }
+      @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+      }
+    </style>
+  </section>
 </head>
+
 <body>
-  <h1>홈입니다</h1>
-  <button onclick="goTest()">테스트화면</button>
-  <button onclick="logout()">로그아웃</button>
+<div layout:fragment="content">
+  <div class="landing-container">
+    <!-- Floating dots -->
+    <div class="float-dot dot1"></div>
+    <div class="float-dot dot2"></div>
+    <div class="float-dot dot3"></div>
+
+    <!-- Animated Title -->
+    <h1 class="gradient bobbing">KnockSea</h1>
+    <div class="korean-title">낚씨</div>
+    <p class="subtitle mt-3">두드리면 열리는 낚시 정보</p>
+
+    <!-- Ocean Waves -->
+    <div class="ocean">
+      <svg viewBox="0 0 1200 200" preserveAspectRatio="none">
+        <path d="M-50,100 C150,140 350,60 550,100 C750,140 950,60 1150,100 C1350,140 1450,80 1500,100 L1500,200 L-50,200 Z"
+              fill="hsla(200,70%,40%,0.6)" />
+      </svg>
+    </div>
+  </div>
+</div>
 </body>
-<script>
-
- async function goTest() {
-    window.location.href = "/test";
- }
-
- async function logout(){
-   const accessToken = localStorage.getItem("accessToken") ;
-   try{
-     const response = await fetch('/logout',{
-       method:'POST',
-       headers:{
-         'Content-Type':'application/json',
-         'Authorization':`Bearer ${accessToken}`
-       }
-     });
-
-     const data = await response.json();
-     if(response.ok){
-       localStorage.removeItem("accessToken");
-       localStorage.removeItem("refreshToken");
-       alert(data.message);
-       window.location.href='/login'
-     }
-
-   }catch(error){
-     document.getElementById("result").innerHTML = `<p style="color:red;">에러: ${error.message}</p>`;
-   }
-
- }
-</script>
 </html>

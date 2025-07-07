@@ -1,0 +1,52 @@
+<!-- src/main/resources/templates/nav.html -->
+<div th:fragment="navbar" xmlns:th="http://www.thymeleaf.org">
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a th:href="@{/map}" class="navbar-logo">
+                <img src="/images/KnockSeaLogo1.png" alt="KnockSea Logo">
+            </a>
+        </div>
+        <div class="navbar-right">
+            <a th:href="@{/posts/page}" class="navbar-link">글 목록</a>
+            <span id="login-link" style="display: none;">
+                <a th:href="@{/login}" class="navbar-link">로그인</a>
+            </span>
+            <span id="logout-section" style="display: none; display: flex; align-items: center; gap: 10px;">
+                <span id="user-name" class="user-badge"></span>
+                <button id="logout-button" class="navbar-button">로그아웃</button>
+            </span>
+        </div>
+    </nav>
+
+    <!-- Login state script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const token = localStorage.getItem('accessToken');
+            const loginLink = document.getElementById('login-link');
+            const logoutSection = document.getElementById('logout-section');
+            const logoutButton = document.getElementById('logout-button');
+            const userName = document.getElementById('user-name');
+
+            if (token) {
+                loginLink.style.display = 'none';
+                logoutSection.style.display = 'flex';
+
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    userName.textContent = payload.sub || 'User';
+                } catch (e) {
+                    userName.textContent = 'User';
+                }
+
+                logoutButton.addEventListener('click', function () {
+                    localStorage.removeItem('accessToken');
+                    alert('로그아웃 되었습니다!');
+                    location.reload();
+                });
+            } else {
+                loginLink.style.display = 'inline';
+                logoutSection.style.display = 'none';
+            }
+        });
+    </script>
+</div>
