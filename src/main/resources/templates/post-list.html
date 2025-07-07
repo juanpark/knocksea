@@ -174,7 +174,8 @@
         <div class="post-info">
             <div class="left-info">
                 작성자: <span th:text="${post.userName}"></span> &nbsp; | &nbsp;
-                조회수: <span th:text="${post.viewCount}"></span>
+                조회수: <span th:text="${post.viewCount}"></span> &nbsp; | &nbsp;
+                댓글수: <span th:text="${post.commentCount}"></span>
             </div>
             <div class="right-info">
                 작성일: <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span>

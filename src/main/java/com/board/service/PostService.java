@@ -6,10 +6,7 @@ import com.board.domain.Post;
 import com.board.domain.Tag;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
-import com.board.repository.CategoryRepository;
-import com.board.repository.MemberRepository;
-import com.board.repository.PostRepository;
-import com.board.repository.TagRepository;
+import com.board.repository.*;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +34,7 @@ public class PostService {
     private final CategoryRepository categoryRepo;
     private final TagRepository tagRepo;
     private final MemberRepository memberRepository;
+    private final CommentRepository commentRepository;
 
     //게시글 저장
     @Transactional
@@ -80,6 +78,10 @@ public class PostService {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
 
+        // 댓글 수 조회
+//        int commentCount = commentRepository.countByPostPostsId(id);
+
+//        return convertToResponseDto(post, commentCount);
         return convertToResponseDto(post);
     }
 
@@ -156,6 +158,7 @@ public class PostService {
         dto.setCreatedAt(post.getCreatedAt());
         dto.setUpdatedAt(post.getUpdatedAt());
         dto.setViewCount(post.getViewCount());
+        dto.setCommentCount(post.getComments().size());
 
         return dto;
     }
@@ -196,7 +199,6 @@ public class PostService {
     //정렬 기능
     private Pageable createPageable(int page, int size, String sort) {
         Sort sortOption;
-
         switch (sort) {
             //조회수로 정렬
             case "views":
