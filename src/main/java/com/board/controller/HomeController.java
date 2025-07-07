@@ -32,13 +32,9 @@ public class HomeController {
   private String googleMapKey;
 
   @GetMapping("/")
-  public String home(Model model) {
-    return "home";
-  }
-
-  @GetMapping("/test")
-  public String test() {
-    return "test";
+  public String map(Model model) {
+    model.addAttribute("googleMapKey", googleMapKey);
+    return "map";
   }
 
   @GetMapping("/login")
@@ -62,11 +58,5 @@ public class HomeController {
   @GetMapping("/register")
   public String register() {
     return "register";
-  }
-
-  @GetMapping("/map")
-  public String map(Model model) {
-    model.addAttribute("googleMapKey", googleMapKey);
-    return "map";
   }
 }
