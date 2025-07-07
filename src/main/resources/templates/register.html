@@ -245,18 +245,11 @@
       },
     })
 
+    const data = await response.json();
     if(response.ok){
-      const available = await response.json();
-      if(available) {
-        alert("사용 가능한 닉네임입니다.");
-        checkNicknameBtn.disabled=true;
-        nicknameInputField.readOnly=true;
-
-      }else {
-        alert("중복된 닉네임입니다.");
-      }
+      alert(data.message);
     }else{
-      alert("확인 중 오류가 발생했습니다.");
+      alert(data.message);
     }
   })
 
@@ -288,14 +281,9 @@
       emailVerifyBtn.textContent = "이메일 인증";
       alert(data.message);
     }else if(response.status === 400) {
-      let message = "";
-
-      for (const [field, errorMsg] of Object.entries(data.data)) {
-        message += `${errorMsg}\n`;
-      }
       emailVerifyBtn.disabled = false;
       emailVerifyBtn.textContent = "이메일 인증";
-      alert(message)
+      alert(data.message)
     }else{
       emailVerifyBtn.disabled = false;
       emailVerifyBtn.textContent = "이메일 인증";
@@ -321,6 +309,8 @@
       emailVerifyBtn.disabled=true;
       codeInputField.readOnly=true;
       emailInputField.readOnly=true;
+    }else if(response.status === 400){
+      alert(data.message);
     }else{
       alert(data.message);
     }
