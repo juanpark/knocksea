@@ -10,7 +10,7 @@ import lombok.Setter;
 @Table(name = "posts_categories")
 public class PostCategory {
 	@EmbeddedId
-    private PostCategoryId id;
+    private PostCategoryId id = new PostCategoryId();
 	
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("postsId")

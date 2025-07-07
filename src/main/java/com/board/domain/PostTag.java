@@ -10,7 +10,7 @@ import lombok.Setter;
 @Table(name = "posts_tags")
 public class PostTag {
 	@EmbeddedId
-    private PostTagId id;
+    private PostTagId id = new PostTagId();
 	
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("postsId")
