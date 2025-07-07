@@ -57,54 +57,53 @@ function buildCommentElement(comment, isChild = false) {
   content.textContent = comment.content;
   div.appendChild(content);
 
-  console.log(
-    "currentUserId:", currentUserId,
-    "comment.userId:", comment.userId,
-    "같나?", Number(currentUserId) === Number(comment.userId)
-  );
+  // 버튼 영역
+  const buttonGroup = document.createElement("div");
 
-  // 수정/삭제 버튼 (내 댓글)
   if (currentUserId && Number(currentUserId) === Number(comment.userId)) {
     const editBtn = document.createElement("button");
     editBtn.textContent = "수정";
+    editBtn.className = "comment-btn";
     editBtn.onclick = () => {
       const newContent = prompt("수정할 내용을 입력하세요", comment.content);
       if (newContent) updateComment(comment.commentId, newContent);
     };
-    div.appendChild(editBtn);
+    buttonGroup.appendChild(editBtn);
 
     const deleteBtn = document.createElement("button");
     deleteBtn.textContent = "삭제";
+    deleteBtn.className = "comment-btn delete-btn";
     deleteBtn.onclick = () => deleteComment(comment.commentId);
-    div.appendChild(deleteBtn);
+    buttonGroup.appendChild(deleteBtn);
   }
 
-  // 채택 버튼 (게시글 작성자만 & 채택 안된 댓글만)
   if (Number(postOwnerId) === Number(currentUserId) && !comment.answer) {
     const adoptBtn = document.createElement("button");
     adoptBtn.textContent = "채택";
+    adoptBtn.className = "comment-btn adopt-btn";
     adoptBtn.onclick = () => adoptComment(comment.commentId);
-    div.appendChild(adoptBtn);
+    buttonGroup.appendChild(adoptBtn);
   }
 
-  // 대댓글 버튼
   const replyBtn = document.createElement("button");
   replyBtn.textContent = "답글";
+  replyBtn.className = "comment-btn";
   replyBtn.onclick = () => {
     const replyContent = prompt("대댓글을 입력하세요");
     if (replyContent) submitComment(replyContent, comment.commentId);
   };
-  div.appendChild(replyBtn);
+  buttonGroup.appendChild(replyBtn);
 
-  // 채택 표시
   if (comment.answer) {
     const adopted = document.createElement("span");
-    adopted.textContent = " ✅ 채택됨";
-    adopted.style.color = "green";
-    div.appendChild(adopted);
+    adopted.textContent = "✅ 채택됨";
+    adopted.className = "adopted-label";
+    buttonGroup.appendChild(adopted);
   }
 
-  // 자식 댓글 재귀 호출
+  div.appendChild(buttonGroup);
+
+  // 자식 댓글 재귀
   if (comment.children && comment.children.length > 0) {
     comment.children.forEach(child => {
       const childEl = buildCommentElement(child, true);

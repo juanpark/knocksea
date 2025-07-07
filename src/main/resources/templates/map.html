@@ -9,38 +9,26 @@
       flex-direction: row;
       margin: 0;
       height: 100vh;
-      overflow: hidden; /* 전체 페이지 스크롤 제거 */
+      overflow: hidden;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f4f6f8;
-    }
-
-    .navbar {
-      position: fixed;
-      width: 100%;
-      top: 0;
-      background-color: #2196F3;
-      padding: 15px 30px;
-      color: white;
-      font-size: 24px;
-      font-weight: bold;
-      z-index: 1001;
+      padding-top: 100px;
     }
 
     .side-panel {
       width: 500px;
-      /*margin-top: 60px; !* 네비바 높이 고려 *!*/
       height: calc(100vh - 60px);
       background-color: #ffffff;
       border-right: 1px solid #ddd;
       box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-      z-index: 999;
+      z-index: 9999;
       padding: 16px;
-      overflow-y: auto; /* 사이드 패널만 스크롤 */
-      scrollbar-width: none; /* Firefox */
-      position: absolute;
-      top: 60px;
+      overflow-y: auto;
+      scrollbar-width: none;
+      position: fixed;
+      top: 105px;
       transition: transform 0.3s ease;
-      transform: translateX(0); /* 기본값: 열려 있음 */
+      transform: translateX(0);
     }
 
     .side-panel.closed {
@@ -54,10 +42,11 @@
     #map {
       flex: 1;
       height: 100vh;
+      z-index: 0;
     }
 
     .toggle-button {
-      position: absolute;
+      position: fixed;
       left: 532px;
       top: 120px;
       background-color: white;
@@ -67,7 +56,7 @@
       border-radius: 0 8px 8px 0;
       cursor: pointer;
       font-weight: bold;
-      z-index: 999;
+      z-index: 9999;
       box-shadow: 5px 1px 5px rgba(0,0,0,0.2);
       transition: left 0.3s ease;
       height: 50px;
@@ -115,8 +104,6 @@
       margin-top: 20px;
     }
 
-
-
     .spot-image img {
       width: 100%;
       height: 300px;
@@ -139,7 +126,6 @@
       width: 100%;
     }
 
-    /*낚시터 세부 정보 관련 css*/
     .spot-info{
       display: flex;
       flex-direction: column;
@@ -201,15 +187,15 @@
   <script async defer
           th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapKey} + '&callback=initMap'}">
   </script>
+
+  <link rel="stylesheet" th:href="@{/css/nav.css}">
 </head>
 <body>
 
-<div class="navbar">
-  knocksea
-</div>
+<div th:replace="nav :: navbar"></div>
 
 <!-- 사이드 패널: 지역 드롭박스 + 낚시터 정보 + 게시글 목록 -->
-<div class="side-panel closed" id="sidePanel">
+<div class="side-panel" id="sidePanel">
 
   <!-- 드롭박스 -->
   <div style="margin-bottom: 20px;">
@@ -219,12 +205,23 @@
       <option value="서울특별시">서울특별시</option>
       <option value="인천광역시">인천광역시</option>
       <option value="경기도">경기도</option>
+
+      <option value="대전광역시">대전광역시</option>
       <option value="충청북도">충청북도</option>
       <option value="충청남도">충청남도</option>
-      <option value="전라북도">전라북도</option>
+      <option value="세종특별자치시">세종특별자치시</option>
+
+      <option value="전북특별자치도">전북특별자치도</option>
       <option value="전라남도">전라남도</option>
+
+      <option value="대구광역시">대구광역시</option>
+      <option value="울산광역시">울산광역시</option>
+      <option value="부산광역시">부산광역시</option>
       <option value="경상북도">경상북도</option>
       <option value="경상남도">경상남도</option>
+
+      <option value="강원특별자치도">강원특별자치도</option>
+      <option value="제주특별자치도">제주특별자치도</option>
     </select>
   </div>
 
@@ -287,7 +284,7 @@
 </div>
 
 <!-- 토글 버튼 -->
-<button class="toggle-button closed" id="toggleButton" onclick="toggleSidePanel()">⮜</button>
+<button class="toggle-button" id="toggleButton" onclick="toggleSidePanel()">⮜</button>
 
 <div id="map"></div>
 
@@ -295,7 +292,9 @@
   //기존 구글맵 코드
   let map;
   let fishingSpots=[];
-  let displayedSpots=[]
+  let displayedSpots=[];
+  let markers=[];
+
   let panelVisible = true;
   const toggleButton = document.getElementById("toggleButton");
   const sidePanel = document.getElementById("sidePanel");
@@ -428,6 +427,42 @@
   function renderMarkers() {
       console.log('현재 마커:', displayedSpots);
       // 구글맵 주석 유지
+       markers.forEach(marker => marker.setMap(null));
+       markers = [];
+
+       // 필터된 마커만 다시 생성
+       displayedSpots.forEach(spot => {
+       if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
+          const pos = { lat: spot.latitude, lng: spot.longitude };
+
+          const marker = new google.maps.Marker({
+                position: pos,
+                map: map,
+                title: spot.name,
+                icon: {
+                    url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                }
+          });
+
+          marker.addListener("click", () => {
+              loadFishingSpot(spot);
+              fetch('/map/spot-image')
+                  .then(res => res.json())
+                  .then(data => {
+                      const imageUrl = data.imageUrl;
+                      const imgElement = document.getElementById("spotImage").querySelector("img");
+                      imgElement.src = imageUrl;
+                  })
+                      .catch(err => {
+                        console.error(err);
+                        document.getElementById("spotImage").querySelector("img").src = "https://placehold.co/600x400";
+                      });
+                openSidePanel();
+          });
+
+          markers.push(marker); // 새로 추가된 마커 저장
+        }
+    });
   }
 
   function filterMarkersByRegion() {

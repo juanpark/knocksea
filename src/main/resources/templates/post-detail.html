@@ -106,6 +106,49 @@
     .back-link:hover {
       text-decoration: underline;
     }
+
+/*   댓글 css  */
+/* 공통 버튼 스타일 */
+.comment-btn {
+  padding: 6px 12px;
+  margin-right: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background-color: #2196F3;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* 호버 효과 */
+.comment-btn:hover {
+  background-color: #1976D2;
+}
+
+/* 채택 버튼은 초록색 */
+.adopt-btn {
+  background-color: #4CAF50;
+}
+.adopt-btn:hover {
+  background-color: #388E3C;
+}
+
+/* 삭제 버튼은 빨간색 */
+.delete-btn {
+  background-color: #f44336;
+}
+.delete-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* 채택 표시 */
+.adopted-label {
+  margin-left: 8px;
+  color: green;
+  font-weight: bold;
+}
   </style>
 
   <link rel="stylesheet" th:href="@{/css/nav.css}">
@@ -165,7 +208,7 @@
 
     <div>
       <textarea id="newCommentContent" rows="3" style="width: 100%;"></textarea>
-      <button onclick="submitComment()">댓글 작성</button>
+      <button onclick="submitComment()" class="comment-btn">댓글 작성</button>
     </div>
 
     <div id="comments-container"></div>
