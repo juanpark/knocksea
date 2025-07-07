@@ -308,12 +308,14 @@ public class PostService {
         });
     }
 
-    // 질문상태 업데이트
-    public void updateStatus(Long postId, Post.Status status) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
-        post.setStatus(status);
-        postRepository.save(post);
+    @Transactional
+    public void updatePostStatusByComments(Post post) {
+        int commentCount = post.getComments().size();
+
+        if (commentCount == 0) {
+            post.setStatus(Post.Status.WAITING);
+        }
     }
+
 
 }
