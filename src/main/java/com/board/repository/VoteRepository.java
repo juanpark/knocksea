@@ -1,6 +1,5 @@
 package com.board.repository;
 
-import com.board.domain.Member;
 import com.board.entity.Vote;
 import com.board.entity.TargetType;
 import com.board.entity.VoteType;
@@ -15,4 +14,5 @@ public interface VoteRepository extends JpaRepository<Vote, Long> {
 
     // 추천 수 / 비추천 수 세기
     long countByTargetIdAndTargetTypeAndVoteType(Long targetId, TargetType targetType, VoteType voteType);
+
 }

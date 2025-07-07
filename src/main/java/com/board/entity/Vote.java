@@ -5,11 +5,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(
         name = "votes",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"member_id", "target_id", "target_type"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "target_id", "target_type"})
 )
 @Getter
 @Setter
@@ -22,8 +23,9 @@ public class Vote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "member_id", nullable = false)
-    private Long memberId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Member member;
 
     @Column(name = "target_id", nullable = false)
     private Long targetId;
@@ -36,6 +38,7 @@ public class Vote {
     @Column(name = "vote_type", nullable = false)
     private VoteType voteType;
 
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

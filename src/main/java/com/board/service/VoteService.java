@@ -21,18 +21,19 @@ public class VoteService {
      * 투표 요청 처리 (추천 or 비추천)
      */
     @Transactional
-    public void vote(Long userId, Long targetId, TargetType targetType, VoteType voteType) {
-        voteRepository.findByMemberIdAndTargetIdAndTargetType(userId, targetId, targetType)
+    public void vote(Member member, Long targetId, TargetType targetType, VoteType voteType) {
+        voteRepository.findByMemberIdAndTargetIdAndTargetType(member.getId(), targetId, targetType)
                 .ifPresentOrElse(existingVote -> {
                     if (existingVote.getVoteType() == voteType) {
-                        throw new IllegalArgumentException("이미 동일한 투표를 했습니다.");
+                      // 이미 투표했으면 취소
+                      voteRepository.delete(existingVote);
                     }
                     // 다른 투표를 했으면 수정
                     existingVote.setVoteType(voteType);
                 }, () -> {
                     // 첫 투표 시 저장
                     Vote vote = Vote.builder()
-                            .memberId(userId)
+                            .member(member)
                             .targetId(targetId)
                             .targetType(targetType)
                             .voteType(voteType)
@@ -41,12 +42,18 @@ public class VoteService {
                 });
     }
 
+  public VoteType getUserVoteType(Member member, Long targetId, TargetType targetType) {
+    return voteRepository.findByMemberIdAndTargetIdAndTargetType(member.getId(), targetId, targetType)
+        .map(Vote::getVoteType)
+        .orElse(null);
+  }
+
     /**
      * 투표 취소
      */
     @Transactional
-    public void cancelVote(Long userId, Long targetId, TargetType targetType) {
-        Vote vote = voteRepository.findByMemberIdAndTargetIdAndTargetType(userId, targetId, targetType)
+    public void cancelVote(Member member, Long targetId, TargetType targetType) {
+        Vote vote = voteRepository.findByMemberIdAndTargetIdAndTargetType(member.getId(), targetId, targetType)
                 .orElseThrow(() -> new IllegalArgumentException("투표 기록이 없습니다."));
 
         voteRepository.delete(vote);

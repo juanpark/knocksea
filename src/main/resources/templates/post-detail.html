@@ -187,6 +187,33 @@
         color: green;
         font-weight: bold;
       }
+
+      .post-vote-btn{
+        border: none;
+        background-color: white;
+        width: fit-content;
+        height: 100%;
+        box-shadow: 0px 1px 3px #dad5d5;
+        border-radius: 4px;
+        line-height: inherit;
+        padding: 4px;
+        cursor: pointer;
+      }
+      .post-vote-btn:hover{
+        background-color: #9fd6ed;
+      }
+      .vote-container{
+        display: flex;
+        width: 100%;
+        margin-top: 20px;
+        justify-content: center;
+        gap: 20px;
+      }
+      .post-vote-btn.active {
+        background-color: #e3f2fd; /* 살짝 어두운 하늘색 배경 */
+        font-weight: bold;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
     </style>
 
     <link rel="stylesheet" th:href="@{/css/nav.css}" />
@@ -248,7 +275,11 @@
 
       <!-- 본문 구역 -->
       <div class="post-content-box">
-        <div class="post-content" th:text="${post.content}">게시글 내용</div>
+        <div class="post-content" th:text="${post.content}">게시글내용</div>
+        <div class="vote-container">
+          <button class="post-vote-btn" id="like">👍 좋아요 <span id="likeCount">0</span></button>
+          <button class="post-vote-btn" id="dislike">👎 싫어요 <span id="dislikeCount">0</span></button>
+        </div>
       </div>
 
       <!-- 태그 목록 -->
@@ -299,9 +330,9 @@
       <a th:href="@{/posts/page}" class="back-link">목록으로</a>
     </div>
 
-    <!-- 댓글 관련 자바스크립트 분리 파일 import -->
-<!--    <script src="/js/post-detail.js"></script>-->
-    <script>
+    <script th:inline="javascript">
+      const likeButton = document.getElementById("like");
+      const disLikeButton = document.getElementById("dislike");
 
       const postId = [[${post.postsId}]];
       const postOwnerId = [[${post.userId}]];
@@ -322,6 +353,7 @@
 
           const data = await res.json();
           currentUserId = data.userId;
+
 
           console.log("🟢 로그인 사용자 ID:", currentUserId);
 
@@ -346,6 +378,20 @@
           const commentEl = buildCommentElement(comment);
           container.appendChild(commentEl);
         });
+
+      likeButton.addEventListener("click", async() => {
+        vote('POST', postId, 'LIKE');
+      });
+
+      disLikeButton.addEventListener("click", async() => {
+        vote('POST', postId ,'DISLIKE');
+      });
+
+
+      function deletePost(postId) {
+        if (!confirm('글을 삭제하시겠습니까?')) {
+          return;
+
       }
 
       function buildCommentElement(comment, isChild = false) {
@@ -403,6 +449,7 @@
           adopted.textContent = "✅ 채택됨";
           adopted.className = "adopted-label";
           buttonGroup.appendChild(adopted);
+          
         }
 
         div.appendChild(buttonGroup);
@@ -480,6 +527,84 @@
           .catch(() => alert("댓글 삭제 실패"));
       }
 
+
+      // 게시글 추천/비추천 API 호출
+      function vote(targetType, targetId, voteType)  {
+        const token = localStorage.getItem("accessToken");
+
+        fetch("/votes", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + token,
+            'Content-Type': "application/json"
+          },
+          body: JSON.stringify({
+            targetId: targetId,
+            targetType: targetType,
+            voteType: voteType
+          })
+        })
+        .then((res) => {
+          if (res.ok) {
+            // 투표 성공 시 최신 개수 재조회
+            fetchVoteCounts();
+            // 버튼 상태 토글
+            const likeBtn = document.getElementById('like');
+            const dislikeBtn = document.getElementById('dislike');
+            if(voteType === 'LIKE') {
+              if(likeBtn.classList.contains('active')) {
+                likeBtn.classList.remove('active'); // 취소
+              } else {
+                likeBtn.classList.add('active');
+                dislikeBtn.classList.remove('active');
+              }
+            } else if(voteType === 'DISLIKE') {
+              if(dislikeBtn.classList.contains('active')) {
+                dislikeBtn.classList.remove('active'); // 취소
+              } else {
+                dislikeBtn.classList.add('active');
+                likeBtn.classList.remove('active');
+              }
+            }
+            alert(voteType === 'LIKE' ? '추천 완료!' : '비추천 완료!');
+          } else {
+            alert('투표에 실패했습니다.');
+          }
+        });
+      }
+
+      // 추천 비추천 수
+      function fetchVoteCounts() {
+        fetch(`/votes/count?targetId=${postId}&targetType=POST`)
+        .then(res => res.json())
+        .then(data => {
+          console.log(data);
+          document.getElementById('likeCount').textContent = data.likeCount;
+          document.getElementById('dislikeCount').textContent = data.dislikeCount;
+        });
+      }
+
+      // 현재 사용자의 투표 상태
+      function fetchUserVote() {
+        fetch(`/votes/user?targetId=${postId}&targetType=POST`, {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+          }
+        })
+        .then(res => {
+          if(res.ok) return res.json();
+          return null;
+        })
+        .then(data => {
+          if(!data) return;
+          if(data.voteType === 'LIKE') {
+            document.getElementById('like').classList.add('active');
+          } else if(data.voteType === 'DISLIKE') {
+            document.getElementById('dislike').classList.add('active');
+          }
+        });
+      }
+
       function adoptComment(commentId) {
         if (!confirm("이 댓글을 채택하시겠습니까?")) return;
 
@@ -504,9 +629,16 @@
             method: 'POST'
           });
         }
+        
+        fetch('/posts/' + postId + '/viewCount', {
+          method: 'POST'
+        });
 
+        fetchVoteCounts();
+        fetchUserVote();
         fetchCurrentUser();
       });
+
     </script>
 <!--    <script>-->
 <!--      console.log("🧪 localStorage token:", localStorage.getItem("accessToken"));-->
