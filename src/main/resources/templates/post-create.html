@@ -1,122 +1,172 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <title>게시글 작성</title>
-  <style>
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  <head>
+    <title>게시글 작성</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
         background-color: #f4f6f8;
         padding-top: 100px;
-    }
-    .container {
+      }
+      .container {
         max-width: 800px;
         margin: 30px auto;
         padding: 0 20px;
-    }
-    h1 {
+      }
+      h1 {
         color: #333;
         margin-bottom: 20px;
-    }
-    .form-card {
+      }
+      .form-card {
         background-color: white;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-    label {
+      }
+      label {
         display: block;
         margin-top: 10px;
         font-weight: bold;
-    }
-    input, textarea {
+      }
+      input,
+      textarea {
         width: 100%;
         padding: 10px;
         margin-top: 5px;
         border: 1px solid #ccc;
         border-radius: 4px;
-    }
-    .button-group {
+      }
+      .button-group {
         margin-top: 15px;
         display: flex;
         gap: 10px;
-    }
-    .btn {
+      }
+      .btn {
         display: inline-block;
         padding: 10px 15px;
         border: none;
         border-radius: 4px;
-        background-color: #2196F3;
+        background-color: #2196f3;
         color: white;
         cursor: pointer;
         text-decoration: none;
         text-align: center;
         transition: background-color 0.2s;
         font-weight: bold;
-    }
-    .btn:hover {
-        background-color: #1976D2;
-    }
-    .back-link {
+      }
+      .btn:hover {
+        background-color: #1976d2;
+      }
+      .back-link {
         display: inline-block;
         margin-top: 20px;
-        color: #2196F3;
+        color: #2196f3;
         text-decoration: none;
         font-weight: bold;
-    }
-    .back-link:hover {
+      }
+      .back-link:hover {
         text-decoration: underline;
-    }
-  </style>
-  <link rel="stylesheet" th:href="@{/css/nav.css}">
-</head>
-<body>
-<div th:replace="nav :: navbar"></div>
+      }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/nav.css}" />
+  </head>
+  <body>
+    <div th:replace="nav :: navbar"></div>
 
-<div class="container">
-  <h1>게시글 작성</h1>
+    <div class="container">
+      <h1>게시글 작성</h1>
 
-  <div class="form-card">
-    <form id="createForm" method="post" action="/posts/create">
-      <label for="title">제목:</label>
-      <input type="text" id="title" name="title" required>
+      <div class="form-card">
+        <form id="createForm" method="post" action="/posts/create">
+          <label for="title">제목:</label>
+          <input type="text" id="title" name="title" required />
 
-      <label for="content">내용:</label>
-      <textarea id="content" name="content" rows="10" cols="50" required></textarea>
+          <label for="content">내용:</label>
+          <textarea
+            id="content"
+            name="content"
+            rows="10"
+            cols="50"
+            required
+          ></textarea>
 
-      <div class="button-group">
-        <button type="submit" class="btn">작성하기</button>
-        <button type="button" class="btn" onclick="window.location.replace('/posts/page')">목록으로</button>
+          <!-- ✅ 카테고리 선택 -->
+          <label for="category">카테고리:</label>
+          <select id="category" name="categoryId">
+            <option value="">-- 카테고리 선택 --</option>
+            <!-- 카테고리 목록을 서버에서 렌더링 -->
+            <option
+              th:each="category : ${categories}"
+              th:value="${category.id}"
+              th:text="${category.name}"
+            >
+              카테고리명
+            </option>
+          </select>
+
+          <!-- ✅ 태그 입력 -->
+          <label for="tags">태그 (쉼표로 구분):</label>
+          <input
+            type="text"
+            id="tags"
+            name="tags"
+            placeholder="예: 감성, 초보, 우럭"
+          />
+
+          <div class="button-group">
+            <button type="submit" class="btn">작성하기</button>
+            <button
+              type="button"
+              class="btn"
+              onclick="window.location.replace('/posts/page')"
+            >
+              목록으로
+            </button>
+          </div>
+        </form>
       </div>
-    </form>
-  </div>
-</div>
+    </div>
 
-<script>
-  document.getElementById('createForm').addEventListener('submit', function (e) {
-      e.preventDefault();
+    <script>
+      document
+        .getElementById("createForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
 
-      const title = document.getElementById('title').value;
-      const content = document.getElementById('content').value;
-      const token = localStorage.getItem('accessToken');
+          const title = document.getElementById("title").value;
+          const content = document.getElementById("content").value;
+          const categoryId = document.getElementById("category").value;
+          const tagInput = document.getElementById("tags").value;
 
-      fetch('/posts/create', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + token
-          },
-          body: JSON.stringify({title, content})
-      })
-      .then(response => {
-          if (response.ok) {
-              window.location.href = '/posts/page';
-          } else {
-              alert('글 작성 실패!');
-          }
-      });
-  });
-</script>
+          // 쉼표로 나눈 태그 리스트
+          const tagList = tagInput
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0);
 
-</body>
+          const token = localStorage.getItem("accessToken");
+
+          fetch("/posts/create", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+            },
+            body: JSON.stringify({
+              title,
+              content,
+              categoryId: categoryId ? Number(categoryId) : null,
+              tagNames: tagList,
+            }),
+          }).then((response) => {
+            if (response.ok) {
+              window.location.href = "/posts/page";
+            } else {
+              alert("글 작성 실패!");
+            }
+          });
+        });
+    </script>
+  </body>
 </html>

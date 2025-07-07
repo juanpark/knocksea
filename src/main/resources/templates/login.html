@@ -134,12 +134,13 @@
     justify-content: center;
     padding-top: 12px;
   }
-  .register-button{
+  a{
     font-size: 16px;
     color: #777777;
+    text-decoration: none;
   }
 
-  .register-button:hover{
+  a:hover{
     font-weight:bolder;
     text-decoration: underline;
   }
@@ -187,23 +188,16 @@
       </div>
     </form>
     <div class="register-container">
-      <p class="register-button">회원가입</p>
+      <a href="register">회원가입</a>
     </div>
   </div>
 </div>
 
 <script th:inline="javascript">
   const kakaoBtn = document.getElementById("kakao-login-btn"); //카카오로그인버튼
-  const registerBtn = document.getElementById("register-button"); //회원가입화면이동버튼
-
   // 카카오 로그인 요청
   kakaoBtn.addEventListener("click",async() => {
     window.location.href = "connect-kakao";
-  })
-
-  // 회원가입 화면 이동
-  registerBtn.addEventListener("click", async() => {
-    window.location.href="register";
   })
 </script>
 </body>
