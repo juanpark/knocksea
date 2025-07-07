@@ -1,9 +1,11 @@
 package com.board.controller;
 
 import com.board.auth.CustomUserDetails;
+import com.board.domain.Category;
 import com.board.domain.Post;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
+import com.board.service.CategoryService;
 import com.board.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +28,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final CategoryService categoryService;
 
     //게시글 리스트 페이지 -> 페이징 처리하면서 주석 처리
 //    @GetMapping
@@ -37,7 +40,9 @@ public class PostController {
 
     //게시글 작성 페이지
     @GetMapping("/create")
-    public String createPostForm() {
+    public String createPostForm(Model model) {
+    	List<Category> categories = categoryService.findAll();
+        model.addAttribute("categories", categories);
         return "post-create";
     }
 
@@ -82,7 +87,9 @@ public class PostController {
     @GetMapping("/{id}/edit")
     public String editPostForm(@PathVariable Long id, Model model) {
         PostResponseDto post = postService.getPost(id);
+        List<Category> categories = categoryService.findAll();
         model.addAttribute("post", post);
+        model.addAttribute("categories", categories);
         return "post-edit";
     }
 

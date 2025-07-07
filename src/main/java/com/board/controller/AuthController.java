@@ -79,7 +79,7 @@ public class AuthController {
     return ResponseEntity.ok("인증 코드가 만료되었습니다.");
   }
 
-  // 자체 로그인
+  // 이메일 로그인
   // POST /login
   @PostMapping("/login")
   public String localLogin(@ModelAttribute @Valid UserLogin userLogin, BindingResult bindingResult,
@@ -114,7 +114,7 @@ public class AuthController {
       return new ResponseEntity<>(email, HttpStatus.CREATED);
   }
 
-  // 자체 로그아웃
+  // 로그아웃
   // POST /logout
   @PostMapping("/logout")
   @ResponseBody
