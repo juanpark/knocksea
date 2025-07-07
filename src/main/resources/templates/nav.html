@@ -1,8 +1,8 @@
 <div th:fragment="navbar">
     <nav class="navbar">
         <div class="navbar-left">
-            <a th:href="@{/}" class="navbar-logo">
-                <img src="/images/KnockSeaLogo1.png" alt="KnockSea Logo">
+            <a th:href="@{/map}" class="navbar-logo">
+            <img src="/images/KnockSeaLogo1.png" alt="KnockSea Logo">
             </a>
         </div>
 
@@ -22,7 +22,7 @@
         </div>
     </nav>
 
-    <!-- ✅ JS -->
+    <!--  JS -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             console.log('Navbar JS Loaded!');
@@ -53,7 +53,7 @@
                 logoutButton.addEventListener('click', function () {
                     localStorage.removeItem('accessToken');
                     alert('로그아웃 되었습니다!');
-                    location.reload(); // ✅ 현재 페이지 유지
+                    location.reload();
                 });
             } else {
                 console.log('비로그인 상태 감지됨');
