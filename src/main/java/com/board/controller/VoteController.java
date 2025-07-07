@@ -22,7 +22,7 @@ public class VoteController {
 
     @PostMapping
     public ResponseEntity<?> vote(@RequestBody VoteRequestDto dto) {
-        Long userId = UserUtil.getCurrentUserId(); // 현재 로그인 유저 ID 추출
+        Long userId = getCurrentUserId(); //현재 로그인 유저 ID 추출
 
         voteService.vote(userId, dto.getTargetId(), dto.getTargetType(), dto.getVoteType());
 
@@ -43,14 +43,14 @@ public class VoteController {
     @DeleteMapping
     public ResponseEntity<?> cancelVote(@RequestParam Long targetId,
                                         @RequestParam TargetType targetType) {
-        Long userId = UserUtil.getCurrentUserId(); // 현재 로그인 유저 ID 추출
+        Long userId = getCurrentUserId(); //현재 로그인 유저 ID 추출
 
         voteService.cancelVote(userId, targetId, targetType);
 
         return ResponseEntity.ok("투표 취소 완료!");
     }
 
-    //유저 ID 추출
+    // 유저 ID 추출
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -60,7 +60,7 @@ public class VoteController {
 
         Object principal = authentication.getPrincipal();
 
-        // JWT: CustomUserDetails를 저장한 경우
+        //JWT: CustomUserDetails를 저장한 경우
         if (principal instanceof UserDetails userDetails) {
             CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
             return customUserDetails.getMember().getId();
