@@ -19,6 +19,7 @@ public class PostResponseDto {
     private int dislikeCount;
     private String status;
     private int viewCount;
+    private int commentCount; // 댓글 개수 표현을 위해 추가
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> categoryNames;
