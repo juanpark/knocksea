@@ -28,6 +28,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
+    private final PostService postService;
 
     // 댓글 작성
     public CommentResponse createComment(CommentCreateRequest request) {
@@ -98,7 +99,11 @@ public class CommentService {
             throw new UnauthorizedCommentAccessException(); // 본인만 삭제 가능
         }
 
+        Post post = comment.getPost();
+        
         commentRepository.delete(comment);
+        
+        postService.updatePostStatusByComments(post);
     }
 
     // 댓글 채택
