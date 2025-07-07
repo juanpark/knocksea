@@ -44,8 +44,10 @@ public class AuthController {
   // 닉네임 중복 확인
   @GetMapping("/check-nickname")
   @ResponseBody
-  public ResponseEntity<Boolean> checkNickname(@RequestParam String nickname) {
-    return new ResponseEntity<>(!memberService.checkNickname(nickname), HttpStatus.OK);
+  public ResponseEntity<MessageResponse> checkNickname(@RequestParam String nickname) {
+    boolean exists = memberService.checkNickname(nickname);
+    String msg = exists ? "중복된 닉네임입니다." : "사용 가능한 닉네임입니다.";
+    return ResponseEntity.ok(MessageResponse.builder().message(msg).build());
   }
 
   // 이메일 인증 코드 요청 (중복 이메일 검증 후 인증코드 전송)
@@ -53,19 +55,9 @@ public class AuthController {
   @ResponseBody
   public ResponseEntity<MessageResponse> sendVerification(
       @Valid @RequestBody EmailVerificationRequest emailVerificationRequest) {
-    MessageResponse emailResponse;
-    try {
-      if (memberService.findByEmail(emailVerificationRequest.getEmail()) != null) {
-        emailResponse = MessageResponse.builder().message("중복된 이메일입니다.").build();
-        return new ResponseEntity<>(emailResponse, HttpStatus.BAD_REQUEST);
-      } else {
-        emailResponse = mailService.sendVerificationCode(emailVerificationRequest.getEmail());
-        return new ResponseEntity<>(emailResponse, HttpStatus.OK);
-      }
-    } catch (Exception e) {
-      emailResponse = MessageResponse.builder().message(e.getMessage()).build();
-      return new ResponseEntity<>(emailResponse, HttpStatus.BAD_REQUEST);
-    }
+
+    MessageResponse emailResponse = memberService.sendVerification(emailVerificationRequest.getEmail());
+    return new ResponseEntity<>(emailResponse, HttpStatus.OK);
   }
 
   // 인증코드 검증
@@ -73,20 +65,10 @@ public class AuthController {
   @ResponseBody
   public ResponseEntity<MessageResponse> codeVerification(
       @RequestBody EmailCodeVerificationRequest emailCodeVerificationRequest) {
-    MessageResponse emailResponse;
-    try {
-      if (mailService.codeVerification(emailCodeVerificationRequest.getEmail(),
-          emailCodeVerificationRequest.getCode())) {
-        emailResponse = MessageResponse.builder().message("이메일 인증 성공").build();
-        return new ResponseEntity<>(emailResponse,HttpStatus.OK);
-      } else {
-        emailResponse = MessageResponse.builder().message("이메일 인증 실패").build();
-        return new ResponseEntity<>(emailResponse, HttpStatus.OK);
-      }
-    } catch (Exception e) {
-      emailResponse = MessageResponse.builder().message(e.getMessage()).build();
-      return new ResponseEntity<>(emailResponse, HttpStatus.BAD_REQUEST);
-    }
+    MessageResponse emailResponse = memberService.verifyEmailCode(
+        emailCodeVerificationRequest.getEmail(), emailCodeVerificationRequest.getCode());
+
+    return new ResponseEntity<>(emailResponse, HttpStatus.OK);
   }
 
   // 인증코드 만료
@@ -117,7 +99,6 @@ public class AuthController {
       model.addAttribute("refreshToken", response.getRefreshToken());
       return "token-handler";
     } catch (BadCredentialsException e) {
-      log.info("Bad credentials");
       redirectAttributes.addFlashAttribute("errors", "아이디 또는 비밀번호가 올바르지 않습니다.");
       return "redirect:/login";
     }
