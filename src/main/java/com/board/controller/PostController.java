@@ -113,10 +113,11 @@ public class PostController {
         return ResponseEntity.ok("삭제 성공");
     }
 
-    //페이징 조회 → URL 변경, 검색어 기능 추가, 정렬 기능 추가
+    //페이징 조회 → URL 변경, 검색어 기능 추가, 정렬 기능 추가, 카테고리 기능 추가
     @GetMapping("/page")
     public String getPostList(@RequestParam(defaultValue = "0") int page,
                               @RequestParam(required = false) String keyword,
+                              @RequestParam(required = false) String categoryName,
                               @RequestParam(defaultValue = "recent") String sort,
                               Model model)
     {
@@ -130,6 +131,8 @@ public class PostController {
         //검색어 있으면 검색 결과 페이지 조회
         if (keyword != null && !keyword.isEmpty()) {
             posts = postService.searchPostsByKeyword(keyword, page, pageSize, sort);
+        } else if(categoryName != null && !categoryName.isEmpty()) {
+        	posts = postService.getPostsByCategory(categoryName, page, pageSize, sort);
         } else {
             posts = postService.getPostsByPage(page, pageSize, sort);
         }
@@ -144,6 +147,7 @@ public class PostController {
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("keyword", keyword); //검색어
         model.addAttribute("sort", sort); //정렬
+        model.addAttribute("categoryName", categoryName);
 
         return "post-list";
     }
@@ -175,26 +179,6 @@ public class PostController {
         }
 
         throw new RuntimeException("로그인이 필요합니다.");
-    }
-
-    // 카테고리, 태그, 상태로 검색
-    @GetMapping
-    public ResponseEntity<List<Post>> getPosts(
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) Long tagId,
-            @RequestParam(required = false) Post.Status status
-    ) {
-        return ResponseEntity.ok(postService.searchPosts(categoryId, tagId, status));
-    }
-
-    // 질문상태 업데이트
-    @PatchMapping("/{postId}/status")
-    public String updateStatus(
-            @PathVariable Long postId,
-            @RequestParam Post.Status status
-    ) {
-        postService.updateStatus(postId, status);
-        return "redirect:/post-detail";
     }
 
     //map 관련 메서드

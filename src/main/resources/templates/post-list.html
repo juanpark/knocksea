@@ -201,27 +201,31 @@
       </div>
 
       <div th:each="post : ${posts}" class="post-card">
-        <a th:href="@{/posts/{id}(id=${post.postsId})}" class="post-title">
-          <div style="display: flex; align-items: center">
-            <div
-              th:class="'status-badge ' +
-                      (${post.status} == 'WAITING' ? 'status-waiting' :
-                       (${post.status} == 'COMPLETED' ? 'status-completed' : 'status-adopted'))"
-              th:text="${post.status} == 'WAITING' ? '대기' :
-                       (${post.status} == 'COMPLETED' ? '완료' : '채택')"
-            >
-              상태
-            </div>
-            <div class="title" th:text="${post.title}">게시글 제목</div>
-            <div
-              class="category"
-              th:each="category : ${post.categoryNames}"
-              th:text="${category}"
-            >
-              카테고리
-            </div>
+        <div style="display: flex; align-items: center">
+          <div
+            th:class="'status-badge ' +
+              (${post.status} == 'WAITING' ? 'status-waiting' :
+              (${post.status} == 'COMPLETED' ? 'status-completed' : 'status-adopted'))"
+            th:text="${post.status} == 'WAITING' ? '대기' :
+              (${post.status} == 'COMPLETED' ? '완료' : '채택')"
+          >
+            상태
           </div>
-        </a>
+          <a
+            th:href="@{/posts/{id}(id=${post.postsId})}"
+            class="post-title title"
+          >
+            <div th:text="${post.title}">게시글 제목</div>
+          </a>
+          <a
+            th:each="category : ${post.categoryNames}"
+            th:text="${category}"
+            th:href="@{/posts/page?categoryName={name}(name=${category})}"
+            class="category"
+          >
+            카테고리
+          </a>
+        </div>
         <div class="post-info">
           <div class="left-info">
             작성자: <span th:text="${post.userName}"></span> &nbsp; | &nbsp;
@@ -239,18 +243,19 @@
 
       <div
         class="pagination"
-        th:with="safeKeyword=${keyword} != null ? ${keyword} : ''"
+        th:with="safeKeyword=${keyword} != null ? ${keyword} : '',
+                 safeCategory=${categoryName} != null ? ${categoryName} : ''"
       >
         <a
           th:if="${currentPage > 1}"
-          th:href="@{'/posts/page?page=' + (${currentPage} - 2) + '&keyword=' + ${safeKeyword} + '&sort=' + ${sort}}"
+          th:href="@{'/posts/page?page=' + (${currentPage} - 2) + '&keyword=' + ${safeKeyword} + '&categoryName=' + ${safeCategory} + '&sort=' + ${sort}}"
           >이전</a
         >
 
         <span th:each="i : ${#numbers.sequence(1, totalPages)}">
           <a
             th:if="${i != currentPage}"
-            th:href="@{'/posts/page?page=' + (${i} - 1) + '&keyword=' + ${safeKeyword} + '&sort=' + ${sort}}"
+            th:href="@{'/posts/page?page=' + (${i} - 1) + '&keyword=' + ${safeKeyword} + '&categoryName=' + ${safeCategory} + '&sort=' + ${sort}}"
             th:text="${i}"
           ></a>
 
@@ -263,7 +268,7 @@
 
         <a
           th:if="${currentPage < totalPages}"
-          th:href="@{'/posts/page?page=' + (${currentPage}) + '&keyword=' + ${safeKeyword} + '&sort=' + ${sort}}"
+          th:href="@{'/posts/page?page=' + (${currentPage}) + '&keyword=' + ${safeKeyword} + '&categoryName=' + ${safeCategory} + '&sort=' + ${sort}}"
           >다음</a
         >
       </div>

@@ -4,8 +4,6 @@ import com.board.domain.*;
 import com.board.dto.PostRequestDto;
 import com.board.dto.PostResponseDto;
 import com.board.repository.*;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +30,6 @@ public class PostService {
     private final CategoryRepository categoryRepo;
     private final TagRepository tagRepo;
     private final MemberRepository memberRepository;
-    private final CommentRepository commentRepository;
     private final PostTagRepository postTagRepository;
     private final PostCategoryRepository postCategoryRepository;
 
@@ -267,6 +264,14 @@ public class PostService {
             return dto;
         });
     }
+    
+    // 카테고리 검색 기능
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> getPostsByCategory(String categoryName, int page, int pageSize, String sort) {
+    	Pageable pageable = createPageable(page, pageSize, sort);
+    	Page<Post> postPage = postRepository.findByCategoryName(categoryName, pageable);
+        return postPage.map(this::convertToResponseDto);
+    }
 
     //정렬 기능
     private Pageable createPageable(int page, int size, String sort) {
@@ -284,28 +289,6 @@ public class PostService {
         }
 
         return PageRequest.of(page, size, sortOption);
-    }
-
-    // 카테고리, 태그, 상태로 검색
-    public List<Post> searchPosts(Long categoryId, Long tagId, Post.Status status) {
-        return postRepository.findAll((root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            if (status != null) {
-                predicates.add(cb.equal(root.get("status"), status));
-            }
-
-            if (categoryId != null) {
-                predicates.add(cb.equal(root.get("category").get("id"), categoryId));
-            }
-
-            if (tagId != null) {
-                Join<Post, Tag> tagJoin = root.join("tags");
-                predicates.add(cb.equal(tagJoin.get("id"), tagId));
-            }
-
-            return cb.and(predicates.toArray(new Predicate[0]));
-        });
     }
 
     @Transactional
