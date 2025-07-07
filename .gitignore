@@ -150,3 +150,6 @@ application.properties
 .env.*
 
 !src/main/resources/application.yml
+
+# SSL keystore
+src/main/resources/keystore.p12
