@@ -187,6 +187,33 @@
         color: green;
         font-weight: bold;
       }
+
+      .post-vote-btn{
+        border: none;
+        background-color: white;
+        width: fit-content;
+        height: 100%;
+        box-shadow: 0px 1px 3px #dad5d5;
+        border-radius: 4px;
+        line-height: inherit;
+        padding: 4px;
+        cursor: pointer;
+      }
+      .post-vote-btn:hover{
+        background-color: #9fd6ed;
+      }
+      .vote-container{
+        display: flex;
+        width: 100%;
+        margin-top: 20px;
+        justify-content: center;
+        gap: 20px;
+      }
+      .post-vote-btn.active {
+        background-color: #e3f2fd; /* 살짝 어두운 하늘색 배경 */
+        font-weight: bold;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
     </style>
 
     <link rel="stylesheet" th:href="@{/css/nav.css}" />
@@ -248,7 +275,11 @@
 
       <!-- 본문 구역 -->
       <div class="post-content-box">
-        <div class="post-content" th:text="${post.content}">게시글 내용</div>
+        <div class="post-content" th:text="${post.content}">게시글내용</div>
+        <div class="vote-container">
+          <button class="post-vote-btn" id="like">👍 좋아요 <span id="likeCount">0</span></button>
+          <button class="post-vote-btn" id="dislike">👎 싫어요 <span id="dislikeCount">0</span></button>
+        </div>
       </div>
 
       <!-- 태그 목록 -->
@@ -299,43 +330,332 @@
       <a th:href="@{/posts/page}" class="back-link">목록으로</a>
     </div>
 
-    <!-- 댓글 관련 자바스크립트 분리 파일 import -->
-    <script src="/js/post-detail.js"></script>
     <script th:inline="javascript">
-      window.addEventListener("DOMContentLoaded", () => {
-        let postId = [[${post.postsId}]];
-        let urlParams = new URL(window.location.href);
+      const likeButton = document.getElementById("like");
+      const disLikeButton = document.getElementById("dislike");
 
-        if (urlParams.searchParams.get('from') === 'edit') {
-          return;
+      const postId = [[${post.postsId}]];
+      const postOwnerId = [[${post.userId}]];
+      const accessToken = localStorage.getItem("accessToken");
+      let currentUserId = null;
+
+      async function fetchCurrentUser() {
+        try {
+          if (!accessToken) return;
+
+          const res = await fetch("/api/auth/me", {
+            headers: {
+              "Authorization": "Bearer " + accessToken
+            }
+          });
+
+          if (!res.ok) throw new Error("사용자 정보를 불러오지 못했습니다");
+
+          const data = await res.json();
+          currentUserId = data.userId;
+
+
+          console.log("🟢 로그인 사용자 ID:", currentUserId);
+
+          loadComments(); // 사용자 정보가 확인된 후 댓글 조회
+        } catch (err) {
+          console.error("❌ 로그인 사용자 정보 조회 실패", err);
         }
+      }
 
-        fetch('/posts/' + postId + '/viewCount', {
-          method: 'POST'
+      // 댓글 불러오기
+      function loadComments() {
+        fetch(`/api/comments/post/${postId}`)
+          .then(res => res.json())
+          .then(data => renderComments(data));
+      }
+
+      function renderComments(comments) {
+        const container = document.getElementById("comments-container");
+        container.innerHTML = "";
+
+        comments.forEach(comment => {
+          const commentEl = buildCommentElement(comment);
+          container.appendChild(commentEl);
         });
+      }
+      likeButton.addEventListener("click", async() => {
+        vote('POST', postId, 'LIKE');
       });
+
+      disLikeButton.addEventListener("click", async() => {
+        vote('POST', postId ,'DISLIKE');
+      });
+
+
 
       function deletePost(postId) {
         if (!confirm('글을 삭제하시겠습니까?')) {
           return;
+
+        }
+      }
+
+      function buildCommentElement(comment, isChild = false) {
+        const div = document.createElement("div");
+        div.style.marginLeft = isChild ? "30px" : "0";
+        div.style.borderBottom = "1px solid #ccc";
+        div.style.padding = "10px 0";
+
+        const info = document.createElement("p");
+        info.innerHTML = `<strong>${comment.nickname}</strong> | ${comment.createAt}`;
+        div.appendChild(info);
+
+        const content = document.createElement("p");
+        content.textContent = comment.content;
+        div.appendChild(content);
+
+        const buttonGroup = document.createElement("div");
+
+        if (currentUserId && Number(currentUserId) === Number(comment.userId)) {
+          const editBtn = document.createElement("button");
+          editBtn.textContent = "수정";
+          editBtn.className = "comment-btn";
+          editBtn.onclick = () => {
+            const newContent = prompt("수정할 내용을 입력하세요", comment.content);
+            if (newContent) updateComment(comment.commentId, newContent);
+          };
+          buttonGroup.appendChild(editBtn);
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "삭제";
+          deleteBtn.className = "comment-btn delete-btn";
+          deleteBtn.onclick = () => deleteComment(comment.commentId);
+          buttonGroup.appendChild(deleteBtn);
         }
 
-        const token = localStorage.getItem('accessToken');
+        if (Number(postOwnerId) === Number(currentUserId) && !comment.answer) {
+          const adoptBtn = document.createElement("button");
+          adoptBtn.textContent = "채택";
+          adoptBtn.className = "comment-btn adopt-btn";
+          adoptBtn.onclick = () => adoptComment(comment.commentId);
+          buttonGroup.appendChild(adoptBtn);
+        }
 
-        fetch('/posts/' + postId + '/delete', {
-          method: 'POST',
+        const replyBtn = document.createElement("button");
+        replyBtn.textContent = "답글";
+        replyBtn.className = "comment-btn";
+        replyBtn.onclick = () => {
+          const replyContent = prompt("대댓글을 입력하세요");
+          if (replyContent) submitComment(replyContent, comment.commentId);
+        };
+        buttonGroup.appendChild(replyBtn);
+
+        if (comment.answer) {
+          const adopted = document.createElement("span");
+          adopted.textContent = "✅ 채택됨";
+          adopted.className = "adopted-label";
+          buttonGroup.appendChild(adopted);
+          
+        }
+
+        div.appendChild(buttonGroup);
+
+        if (comment.children && comment.children.length > 0) {
+          comment.children.forEach(child => {
+            const childEl = buildCommentElement(child, true);
+            div.appendChild(childEl);
+          });
+        }
+
+        return div;
+      }
+
+      function submitComment(content = null, parentId = null) {
+        const textarea = document.getElementById("newCommentContent");
+        const commentContent = content || textarea.value.trim();
+
+        if (!commentContent) return alert("댓글 내용을 입력하세요");
+
+        fetch("/api/comments", {
+          method: "POST",
           headers: {
-            'Authorization': 'Bearer ' + token
-          }
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + accessToken,
+          },
+          body: JSON.stringify({
+            content: commentContent,
+            postId: postId,
+            userId: currentUserId,
+            parentId: parentId,
+          }),
         })
-        .then(response => {
-          if (response.ok) {
-            window.location.replace('/posts/page');
+          .then(async res => {
+            if (!res.ok) throw new Error("작성 실패: " + res.status);
+            const text = await res.text();
+            return text ? JSON.parse(text) : {};
+          })
+          .then(() => {
+            textarea.value = "";
+            loadComments();
+          })
+          .catch((err) => alert("댓글 작성 실패: " + err.message));
+      }
+
+      function updateComment(commentId, newContent) {
+        fetch(`/api/comments/${commentId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + accessToken,
+          },
+          body: JSON.stringify({ content: newContent }),
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("수정 실패");
+            loadComments();
+          })
+          .catch(() => alert("댓글 수정 실패"));
+      }
+
+      function deleteComment(commentId) {
+        if (!confirm("댓글을 삭제할까요?")) return;
+
+        fetch(`/api/comments/${commentId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: "Bearer " + accessToken,
+          },
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("삭제 실패");
+            loadComments();
+          })
+          .catch(() => alert("댓글 삭제 실패"));
+      }
+
+
+      // 게시글 추천/비추천 API 호출
+      function vote(targetType, targetId, voteType)  {
+        const token = localStorage.getItem("accessToken");
+
+        fetch("/votes", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + token,
+            'Content-Type': "application/json"
+          },
+          body: JSON.stringify({
+            targetId: targetId,
+            targetType: targetType,
+            voteType: voteType
+          })
+        })
+        .then((res) => {
+          if (res.ok) {
+            // 투표 성공 시 최신 개수 재조회
+            fetchVoteCounts();
+            // 버튼 상태 토글
+            const likeBtn = document.getElementById('like');
+            const dislikeBtn = document.getElementById('dislike');
+            if(voteType === 'LIKE') {
+              if(likeBtn.classList.contains('active')) {
+                likeBtn.classList.remove('active'); // 취소
+              } else {
+                likeBtn.classList.add('active');
+                dislikeBtn.classList.remove('active');
+              }
+            } else if(voteType === 'DISLIKE') {
+              if(dislikeBtn.classList.contains('active')) {
+                dislikeBtn.classList.remove('active'); // 취소
+              } else {
+                dislikeBtn.classList.add('active');
+                likeBtn.classList.remove('active');
+              }
+            }
+            alert(voteType === 'LIKE' ? '추천 완료!' : '비추천 완료!');
           } else {
-            alert('글 삭제 실패!');
+            alert('투표에 실패했습니다.');
           }
         });
       }
+
+      // 추천 비추천 수
+      function fetchVoteCounts() {
+        fetch(`/votes/count?targetId=${postId}&targetType=POST`)
+        .then(res => res.json())
+        .then(data => {
+          console.log(data);
+          document.getElementById('likeCount').textContent = data.likeCount;
+          document.getElementById('dislikeCount').textContent = data.dislikeCount;
+        });
+      }
+
+      // 현재 사용자의 투표 상태
+      function fetchUserVote() {
+        fetch(`/votes/user?targetId=${postId}&targetType=POST`, {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('accessToken')
+          }
+        })
+        .then(res => {
+          if(res.ok) return res.json();
+          return null;
+        })
+        .then(data => {
+          if(!data) return;
+          if(data.voteType === 'LIKE') {
+            document.getElementById('like').classList.add('active');
+          } else if(data.voteType === 'DISLIKE') {
+            document.getElementById('dislike').classList.add('active');
+          }
+        });
+      }
+
+      function adoptComment(commentId) {
+        if (!confirm("이 댓글을 채택하시겠습니까?")) return;
+
+        fetch(`/api/comments/${commentId}/adopt`, {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + accessToken,
+          },
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("채택 실패");
+            loadComments();
+          })
+          .catch(() => alert("댓글 채택 실패"));
+      }
+
+      // 조회수 증가와 사용자 조회 시작
+      window.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URL(window.location.href);
+        if (urlParams.searchParams.get('from') !== 'edit') {
+          fetch('/posts/' + postId + '/viewCount', {
+            method: 'POST'
+          });
+        }
+        
+        // fetch('/posts/' + postId + '/viewCount', {
+        //   method: 'POST'
+        // });
+
+        fetchVoteCounts();
+        fetchUserVote();
+        fetchCurrentUser();
+      });
+
     </script>
+<!--    <script>-->
+<!--      console.log("🧪 localStorage token:", localStorage.getItem("accessToken"));-->
+
+<!--      fetch("/api/auth/me", {-->
+<!--        headers: {-->
+<!--          Authorization: "Bearer " + localStorage.getItem("accessToken"),-->
+<!--        }-->
+<!--      })-->
+<!--      .then(res => {-->
+<!--        console.log("🧪 /api/auth/me status:", res.status);-->
+<!--        return res.json();-->
+<!--      })-->
+<!--      .then(data => console.log("🧪 /api/auth/me result:", data))-->
+<!--      .catch(err => console.error("❌ fetch 실패:", err));-->
+<!--    </script>-->
   </body>
 </html>

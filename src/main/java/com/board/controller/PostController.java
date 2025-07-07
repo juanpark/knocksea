@@ -66,19 +66,48 @@ public class PostController {
     }
 
     //게시글 상세 페이지
+//    @GetMapping("/{id}")
+//    public String getPost(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+//        //해당 id를 조회 후 dto로 가공
+//        PostResponseDto post = postService.getPost(id);
+//        model.addAttribute("post", post);
+//
+//        // ✅ SecurityContextHolder로 로그인 사용자 꺼내기
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//
+//        // 로그인 사용자 id 추가 : 댓글 기능의 현재 로그인된 사용자 정보 필요
+//        // Long currentUserId = 6L; // 디버깅용! 실제 배포 전에 제거해야 함!!!!
+//        Long currentUserId = (userDetails != null) ? userDetails.getMember().getId() : null;
+//
+//        if (authentication != null && authentication.isAuthenticated()) {
+//            Object principal = authentication.getPrincipal();
+//            if (principal instanceof CustomUserDetails) {
+//                currentUserId = ((CustomUserDetails) principal).getMember().getId();
+//            }
+//        }
+//
+//        model.addAttribute("currentUserId", currentUserId);
+//
+//        return "post-detail";
+//    }
     @GetMapping("/{id}")
-    public String getPost(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        //해당 id를 조회 후 dto로 가공
+    public String getPost(@PathVariable Long id, Model model) {
         PostResponseDto post = postService.getPost(id);
         model.addAttribute("post", post);
 
-        // 로그인 사용자 id 추가 : 댓글 기능의 현재 로그인된 사용자 정보 필요
-//        Long currentUserId = (userDetails != null) ? userDetails.getMember().getId() : null;
-        Long currentUserId = 6L; // 디버깅용! 실제 배포 전에 제거해야 함!!!!
+        // SecurityContextHolder로 로그인 사용자 꺼내기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long currentUserId = null;
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof CustomUserDetails) {
+                currentUserId = ((CustomUserDetails) principal).getMember().getId();
+            }
+        }
+
         model.addAttribute("currentUserId", currentUserId);
-        // 확인
-//        System.out.println("확인 userDetails = " + userDetails);
-//        System.out.println("확인 currentUserId = " + currentUserId);
+        System.out.println("✅ currentUserId = " + currentUserId);
 
         return "post-detail";
     }
