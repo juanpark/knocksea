@@ -227,7 +227,7 @@
 
   <!-- 낚시터 사진 -->
   <div class="spot-image" id="spotImage">
-    <img src="https://source.unsplash.com/random" alt="낚시터 이미지">
+    <img src="" alt="낚시터 이미지">
   </div>
 
   <!--낚시터 정보-->
@@ -307,47 +307,14 @@
       });
 
       fetch('/map/fishing-spots')
-          .then(res => res.json())
-          .then(data => {
-            fishingSpots = data;
-            displayedSpots = data;
-
-              data.forEach(spot => {
-                  if (spot.latitude && spot.longitude && !isNaN(spot.latitude) && !isNaN(spot.longitude)) {
-                      const pos = { lat: spot.latitude, lng: spot.longitude };
-
-                      const marker = new google.maps.Marker({
-                          position: pos,
-                          map: map,
-                          title: spot.name,
-                          icon: {
-                              url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                          }
-                      });
-
-                      marker.addListener("click", () => {
-                        loadFishingSpot(spot);
-                        fetch('/map/spot-image')
-                        .then(res => res.json())
-                        .then(data => {
-                          const imageUrl = data.imageUrl;
-                          const imgElement = document.getElementById("spotImage").querySelector("img");
-                          imgElement.src = imageUrl;
-                        })
-                        .catch(err => {
-                          console.error(err);
-                          document.getElementById("spotImage").querySelector("img").src = "https://placehold.co/600x400";
-                        });
-                        openSidePanel(); // 클릭 시 항상 열리도록
-                      });
-                  }
-              });
-          })
-          .catch(err => {
-              console.error("마커 로딩 실패:", err);
-          });
+      .then(res => res.json())
+      .then(data => {
+        fishingSpots = data;
+        displayedSpots = data;
+        renderMarkers(); // 지도 생성 이후 마커 렌더링
+      })
+      .catch(err => console.error('낚시터 데이터 로딩 실패:', err));
   }
-
 
   // 사이드 패널 토글 버튼 열림, 닫힘 함수
   function toggleSidePanel() {
@@ -413,17 +380,7 @@
           .catch(err => console.error('게시글 로딩 실패:', err));
   }
 
-  function loadFishingSpots() {
-      fetch('/map/fishing-spots')
-          .then(res => res.json())
-          .then(data => {
-              fishingSpots = data;
-              displayedSpots = data;
-              renderMarkers();
-          })
-          .catch(err => console.error('낚시터 데이터 로딩 실패:', err));
-  }
-
+  // 지역에 따라 마커 필터링
   function renderMarkers() {
       console.log('현재 마커:', displayedSpots);
       // 구글맵 주석 유지
@@ -481,7 +438,7 @@
 
   window.onload = function () {
       loadPosts();
-      loadFishingSpots();
+      initMap();
   }
 </script>
 
