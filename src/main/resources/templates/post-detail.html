@@ -387,13 +387,29 @@
         vote('POST', postId ,'DISLIKE');
       });
 
+        function deletePost(postId) {
+          if (!confirm("글을 삭제하시겠습니까?")) return;
 
-
-      function deletePost(postId) {
-        if (!confirm('글을 삭제하시겠습니까?')) {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          alert("로그인이 필요합니다.");
           return;
-
         }
+
+        fetch(`/posts/${postId}/delete`, {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + accessToken
+          }
+        })
+        .then(res => {
+          if (!res.ok) throw new Error("삭제 실패");
+          alert("삭제되었습니다.");
+          window.location.href = "/posts/page";
+        })
+        .catch(err => {
+          alert("삭제 중 오류: " + err.message);
+        });
       }
 
       function buildCommentElement(comment, isChild = false) {
