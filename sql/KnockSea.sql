@@ -33,6 +33,7 @@ CREATE TABLE posts (
     status ENUM('WAITING', 'COMPLETED', 'ADOPTED') NOT NULL DEFAULT 'WAITING',
     create_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    view_count INT NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
@@ -58,11 +59,11 @@ CREATE TABLE votes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     target_id BIGINT NOT NULL,
-    target_type ENUM('POST', 'COMMENT') NOT NULL,
-    is_like ENUM('LIKE', 'DISLIKE') NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uniq_vote (user_id, target_id, target_type),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    target_type VARCHAR(20) NOT NULL,
+    vote_type VARCHAR(20) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_member_target UNIQUE (user_id, target_id, target_type),
+    CONSTRAINT fk_votes_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- 카테고리
@@ -109,16 +110,4 @@ CREATE TABLE fishing_spot (
     phone VARCHAR(50),
     fee_info VARCHAR(255),
     update_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- 추천/비추천
-CREATE TABLE vote (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    question_id BIGINT NOT NULL,
-    is_upvote BOOLEAN NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (question_id) REFERENCES question(id)
 );
