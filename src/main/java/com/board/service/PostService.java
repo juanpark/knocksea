@@ -296,16 +296,13 @@ public class PostService {
     public void updatePostStatusByComments(Post post) {
         System.out.println("📌 post 상태 갱신 시도 - postId: " + post.getPostsId());
 
-        int commentCount = post.getComments().size();
-
         List<Comment> remainingComments = commentRepository.findByPost(post);
-        System.out.println("📌 남은 댓글 수: " + remainingComments.size());
+        int commentCount = remainingComments.size();
+        System.out.println("📌 남은 댓글 수: " + commentCount);
 
         if (commentCount == 0) {
             post.setStatus(Post.Status.WAITING);
-        }
-
-        if (remainingComments.stream().noneMatch(Comment::isAnswer)) {
+        } else if (remainingComments.stream().noneMatch(Comment::isAnswer)) {
             post.setStatus(Post.Status.COMPLETED);
             System.out.println("📌 post 상태 → COMPLETED 로 변경됨");
         }

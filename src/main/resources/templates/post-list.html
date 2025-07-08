@@ -176,10 +176,10 @@
 <body>
 <div th:replace="nav :: navbar"></div>
 
-<div class="container">
-    <h1>게시글 목록</h1>
+    <div class="container">
+      <h1>게시글 목록</h1>
 
-    <div class="top-bar">
+      <div class="top-bar">
         <a href="/posts/create" class="create-button">게시글 작성</a>
 
         <form method="get" action="/posts/page" class="search-form">
@@ -200,11 +200,11 @@
                 </option>
             </select>
         </form>
-    </div>
+      </div>
 
-    <div th:if="${posts.size() == 0}" class="no-posts">
+      <div th:if="${posts.size() == 0}" class="no-posts">
         게시글이 없습니다.
-    </div>
+      </div>
 
     <div th:each="post : ${posts}" class="post-card">
         <!-- 제목 줄 -->
@@ -247,7 +247,7 @@
                 <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
             </div>
         </div>
-    </div>
+      </div>
 
     <div
             class="pagination"
