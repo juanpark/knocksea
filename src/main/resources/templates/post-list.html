@@ -112,6 +112,12 @@
       }
       .category {
         color: #757474;
+        font-size: 15px;
+        text-decoration: underline;
+        margin-left: 10px;
+      }
+      .category:hover {
+        text-decoration: underline;
       }
       .post-info {
         display: flex;
@@ -200,46 +206,48 @@
         게시글이 없습니다.
       </div>
 
-      <div th:each="post : ${posts}" class="post-card">
-        <div style="display: flex; align-items: center">
-          <div
-            th:class="'status-badge ' +
-              (${post.status} == 'WAITING' ? 'status-waiting' :
-              (${post.status} == 'COMPLETED' ? 'status-completed' : 'status-adopted'))"
-            th:text="${post.status} == 'WAITING' ? '대기' :
-              (${post.status} == 'COMPLETED' ? '완료' : '채택')"
-          >
-            상태
-          </div>
-          <a
-            th:href="@{/posts/{id}(id=${post.postsId})}"
-            class="post-title title"
-          >
-            <div th:text="${post.title}">게시글 제목</div>
-          </a>
-          <a
-            th:each="category : ${post.categoryNames}"
-            th:text="${category}"
-            th:href="@{/posts/page?categoryName={name}(name=${category})}"
-            class="category"
-          >
-            카테고리
-          </a>
+        <div th:each="post : ${posts}" class="post-card">
+            <!-- 제목 줄 -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <!-- 상태뱃지 + 제목 -->
+                <div style="display: flex; align-items: center;">
+                    <div
+                            th:class="'status-badge ' +
+          (${post.status} == 'WAITING' ? 'status-waiting' :
+          (${post.status} == 'COMPLETED' ? 'status-completed' : 'status-adopted'))"
+                            th:text="${post.status} == 'WAITING' ? '대기' :
+          (${post.status} == 'COMPLETED' ? '완료' : '채택')">
+                        상태
+                    </div>
+                    <a
+                            th:href="@{/posts/{id}(id=${post.postsId})}"
+                            class="post-title"
+                            th:text="${post.title}">게시글 제목</a>
+                </div>
+
+                <!-- 카테고리 -->
+                <div>
+                    <a th:each="category : ${post.categoryNames}"
+                       th:text="${category}"
+                       th:href="@{/posts/page?categoryName={name}(name=${category})}" class="category">
+                        카테고리
+                    </a>
+                </div>
+            </div>
+
+            <!-- 게시글 메타 정보 -->
+            <div class="post-info">
+                <div class="left-info">
+                    작성자: <span th:text="${post.userName}"></span> &nbsp; | &nbsp;
+                    조회수: <span th:text="${post.viewCount}"></span> &nbsp; | &nbsp;
+                    댓글수: <span th:text="${post.commentCount}"></span>
+                </div>
+                <div class="right-info">
+                    작성일:
+                    <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                </div>
+            </div>
         </div>
-        <div class="post-info">
-          <div class="left-info">
-            작성자: <span th:text="${post.userName}"></span> &nbsp; | &nbsp;
-            조회수: <span th:text="${post.viewCount}"></span> &nbsp; | &nbsp;
-            댓글수: <span th:text="${post.commentCount}"></span>
-          </div>
-          <div class="right-info">
-            작성일:
-            <span
-              th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"
-            ></span>
-          </div>
-        </div>
-      </div>
 
       <div
         class="pagination"
