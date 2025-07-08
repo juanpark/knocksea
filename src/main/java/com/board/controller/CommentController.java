@@ -6,7 +6,10 @@ import com.board.dto.CommentUpdateRequest;
 import com.board.dto.CommentResponse;
 import com.board.service.CommentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -76,11 +79,28 @@ public class CommentController {
     // 댓글 삭제 (로그인 사용자만 가능)
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Map<String, Object>> deleteComment(@PathVariable Long commentId) {
-        Long userId = getCurrentUserId();
-        commentService.deleteComment(commentId, userId);
-        Map<String, Object> body = new HashMap<>();
-        body.put("result", "ok");
-        return ResponseEntity.ok(body); // 200 OK + JSON body
+//        System.out.println("🟢 댓글 삭제 요청 들어옴: {}" + commentId);
+//        Long userId = getCurrentUserId();
+//        commentService.deleteComment(commentId, userId);
+//        Map<String, Object> body = new HashMap<>();
+//        body.put("result", "ok");
+//        return ResponseEntity.ok(body); // 200 OK + JSON body
+        System.out.println("🟢 댓글 삭제 요청 들어옴: " + commentId);
+        try {
+            Long userId = getCurrentUserId();
+            System.out.println("🟡 현재 로그인 ID: " + userId);
+            commentService.deleteComment(commentId, userId);
+
+            return ResponseEntity
+                    .ok()
+                    .contentType(MediaType.APPLICATION_JSON) // ← 이거 꼭 추가
+                    .body(Map.of("result", "ok"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     // 댓글 채택 (로그인 사용자만 가능, 글 작성자여야 함)
