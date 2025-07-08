@@ -54,19 +54,6 @@ public class CommentService {
         return toResponse(saved);
     }
 
-    // 댓글 수정
-    /*public void updateComment(Long commentId, CommentUpdateRequest request, Long currentUserId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
-
-        // 로그인한 사용자와 댓글 작성자가 일치하는지 확인
-        if (!comment.getMember().getId().equals(currentUserId)) {
-            throw new SecurityException("해당 댓글을 수정할 권한이 없습니다.");
-        }
-
-        comment.setContent(request.getContent());
-        comment.setUpdatedAt(java.time.LocalDateTime.now());
-    }*/
     public void updateComment(Long commentId, CommentUpdateRequest request, Long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(CommentNotFoundException::new);
@@ -79,18 +66,6 @@ public class CommentService {
         comment.setUpdatedAt(LocalDateTime.now());
     }
 
-    // 댓글 삭제
-    /*public void deleteComment(Long commentId, Long currentUserId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
-
-        // 로그인한 사용자와 댓글 작성자가 일치하는지 확인
-        if (!comment.getMember().getId().equals(currentUserId)) {
-            throw new SecurityException("해당 댓글을 삭제할 권한이 없습니다.");
-        }
-
-        commentRepository.delete(comment);
-    }*/
     public void deleteComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(CommentNotFoundException::new);
@@ -100,10 +75,29 @@ public class CommentService {
         }
 
         Post post = comment.getPost();
-        
+
+        // 🔥 대댓글 있을 경우 명시적으로 제거
+        if (comment.getChildren() != null && !comment.getChildren().isEmpty()) {
+            comment.getChildren().clear();
+        }
+
+        // 🔥 부모 댓글에서 자식 제거 (양방향 유지하려면)
+        if (comment.getParent() != null) {
+            comment.getParent().getChildren().remove(comment);
+        }
+
+        System.out.println("🧨 삭제 대상 댓글 ID: " + comment.getCommentId());
+        System.out.println("🧨 삭제 대상 내용: " + comment.getContent());
+        System.out.println("🧨 현재 댓글 수: " + commentRepository.count());
+
         commentRepository.delete(comment);
+        commentRepository.flush(); // 즉시 delete 쿼리 실행
+
+        System.out.println("✅ 댓글 삭제됨");
         
         postService.updatePostStatusByComments(post);
+        // 혹시 롤백 유발?
+        System.out.println("📌 post 상태 업데이트 후");
     }
 
     // 댓글 채택
