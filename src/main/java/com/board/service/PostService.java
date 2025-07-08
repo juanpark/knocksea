@@ -32,6 +32,7 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final PostTagRepository postTagRepository;
     private final PostCategoryRepository postCategoryRepository;
+    private final CommentRepository commentRepository;
 
     //게시글 저장
     @Transactional
@@ -293,10 +294,17 @@ public class PostService {
 
     @Transactional
     public void updatePostStatusByComments(Post post) {
-        int commentCount = post.getComments().size();
+        System.out.println("📌 post 상태 갱신 시도 - postId: " + post.getPostsId());
+
+        List<Comment> remainingComments = commentRepository.findByPost(post);
+        int commentCount = remainingComments.size();
+        System.out.println("📌 남은 댓글 수: " + commentCount);
 
         if (commentCount == 0) {
             post.setStatus(Post.Status.WAITING);
+        } else if (remainingComments.stream().noneMatch(Comment::isAnswer)) {
+            post.setStatus(Post.Status.COMPLETED);
+            System.out.println("📌 post 상태 → COMPLETED 로 변경됨");
         }
     }
 
