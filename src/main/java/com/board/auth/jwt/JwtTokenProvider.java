@@ -2,6 +2,7 @@ package com.board.auth.jwt;
 
 import com.board.auth.CustomUserDetails;
 import com.board.domain.Member;
+import com.board.exception.CustomException;
 import com.board.repository.MemberRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -136,16 +138,15 @@ public class JwtTokenProvider {
           .parseClaimsJws(token);
       return true;
     } catch (SecurityException | MalformedJwtException e) {
-      System.out.println("잘못된 JWT 서명입니다.");
+      throw new CustomException("잘못된 JWT 서명입니다.", HttpStatus.UNAUTHORIZED);
     } catch (ExpiredJwtException e) {
-      System.out.println("JWT 토큰이 만료되었습니다.");
+      throw new CustomException("JWT 토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED);
     } catch (UnsupportedJwtException e) {
-      System.out.println("지원되지 않는 JWT 토큰입니다.");
+      throw new CustomException("지원되지 않는 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED);
     } catch (IllegalArgumentException e) {
-      System.out.println("JWT claims 문자열이 비어있습니다.");
+      throw new CustomException("JWT claims 문자열이 비어있습니다.", HttpStatus.UNAUTHORIZED);
     }
 
-    return false;
   }
 
   // token 만료시간 추출

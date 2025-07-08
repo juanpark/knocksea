@@ -1,5 +1,6 @@
 package com.board.auth.jwt;
 
+import com.board.exception.CustomException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -42,24 +44,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-    log.info("Authorization: {}", request.getHeader("Authorization"));
-    String token = resolveToken(request);
-    log.info("[JwtAuthenticationFilter doFilterInternal] JWT token: {}", token);
+    try {
+      String token = resolveToken(request);
+      log.info("[JwtAuthenticationFilter doFilterInternal] JWT token: {}", token);
 
-    if (token != null) {
-      try {
-        if (jwtTokenProvider.validateToken(token)) {
-          Authentication authentication = jwtTokenProvider.getAuthentication(token);
-          SecurityContextHolder.getContext().setAuthentication(authentication);
-          log.info("[JwtAuthenticationFilter doFilterInternal] 사용자 정보: {}",
-              authentication.getPrincipal());
-        }
-      } catch (Exception e) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().println(e.getMessage());
-        return;
+      if (token != null && jwtTokenProvider.validateToken(token)) {
+        Authentication authentication = jwtTokenProvider.getAuthentication(token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        log.info("[JwtAuthenticationFilter doFilterInternal] 사용자 정보: {}",
+            authentication.getPrincipal());
       }
+      filterChain.doFilter(request, response);
+
+    } catch (CustomException e) {
+      log.error("[JwtAuthenticationFilter] 예외 발생: {}", e.getMessage());
+      response.setStatus(e.getStatus().value());
+      response.setContentType("application/json;charset=UTF-8");
+      response.getWriter().write(
+          "{\"error\": \"" + e.getMessage() + "\", \"code\": " + e.getStatus().value() + "}"
+      );
     }
-    filterChain.doFilter(request, response);
   }
 }
